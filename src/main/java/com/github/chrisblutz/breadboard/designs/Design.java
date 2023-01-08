@@ -1,29 +1,27 @@
 package com.github.chrisblutz.breadboard.designs;
 
-import com.github.chrisblutz.breadboard.components.ChipTemplate;
-import com.github.chrisblutz.breadboard.designs.components.*;
+import com.github.chrisblutz.breadboard.designs.components.Chip;
+import com.github.chrisblutz.breadboard.designs.components.Pin;
+import com.github.chrisblutz.breadboard.designs.components.Wire;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
-import com.github.chrisblutz.breadboard.simulation.components.Node;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Design implements BreadboardSavable {
 
     public int width;
     public int height;
 
-    public List<Pin> inputs = new ArrayList<>();
-    public List<Pin> outputs = new ArrayList<>();
+    public List<Pin> pins = new ArrayList<>();
     public List<Chip> chips = new ArrayList<>();
     public List<Wire> wires = new ArrayList<>();
 
-    public List<Pin> getInputPins() {
-        return inputs;
-    }
-
-    public List<Pin> getOutputPins() {
-        return outputs;
+    public List<Pin> getPins() {
+        return pins;
     }
 
     public List<Chip> getChips() {
@@ -43,16 +41,16 @@ public class Design implements BreadboardSavable {
         yamlMapping.put("Height", height);
 
         // Construct input array and set the mapping
-        List<Map<String, Object>> inputYamlMapping = new ArrayList<>();
-        for (Pin input : inputs)
-            inputYamlMapping.add(input.dumpToYAML(writer));
-        yamlMapping.put("Inputs", inputYamlMapping);
+//        List<Map<String, Object>> inputYamlMapping = new ArrayList<>();
+//        for (Pin input : inputs)
+//            inputYamlMapping.add(input.dumpToYAML(writer));
+//        yamlMapping.put("Inputs", inputYamlMapping);
 
         // Construct output array and set the mapping
-        List<Map<String, Object>> outputYamlMapping = new ArrayList<>();
-        for (Pin output : outputs)
-            outputYamlMapping.add(output.dumpToYAML(writer));
-        yamlMapping.put("Outputs", outputYamlMapping);
+//        List<Map<String, Object>> outputYamlMapping = new ArrayList<>();
+//        for (Pin output : outputs)
+//            outputYamlMapping.add(output.dumpToYAML(writer));
+//        yamlMapping.put("Outputs", outputYamlMapping);
 
         // Construct chip array and set the mapping
         List<Map<String, Object>> chipYamlMapping = new ArrayList<>();

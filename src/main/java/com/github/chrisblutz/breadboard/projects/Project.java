@@ -1,13 +1,15 @@
 package com.github.chrisblutz.breadboard.projects;
 
 import com.github.chrisblutz.breadboard.components.ChipTemplate;
-import com.github.chrisblutz.breadboard.components.PinTemplate;
 import com.github.chrisblutz.breadboard.designs.Design;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Project implements BreadboardSavable {
 
@@ -15,9 +17,6 @@ public class Project implements BreadboardSavable {
     public String name;
 
     public List<ChipTemplate> projectSpecificChipTemplates = new ArrayList<>();
-
-    public List<PinTemplate> inputPinTemplates = new ArrayList<>();
-    public List<PinTemplate> outputPinTemplates = new ArrayList<>();
     public Design design;
 
     @Override

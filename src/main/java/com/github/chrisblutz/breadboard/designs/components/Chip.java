@@ -15,8 +15,6 @@ public class Chip implements BreadboardSavable {
 
     public ChipTemplate chipTemplate;
 
-    public List<Pin> pins = new ArrayList<>();
-
     public int getX() {
         return x;
     }
@@ -27,10 +25,6 @@ public class Chip implements BreadboardSavable {
 
     public ChipTemplate getChipTemplate() {
         return chipTemplate;
-    }
-
-    public List<Pin> getPins() {
-        return pins;
     }
 
     @Override

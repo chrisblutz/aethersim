@@ -1,9 +1,13 @@
 package com.github.chrisblutz.breadboard.components;
 
+import com.github.chrisblutz.breadboard.designs.components.Pin;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class ChipTemplate implements BreadboardSavable {
 
@@ -13,8 +17,7 @@ public abstract class ChipTemplate implements BreadboardSavable {
     public int width;
     public int height;
 
-    public List<PinTemplate> inputPinTemplates = new ArrayList<>();
-    public List<PinTemplate> outputPinTemplates = new ArrayList<>();
+    public List<Pin> pins = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -30,6 +33,10 @@ public abstract class ChipTemplate implements BreadboardSavable {
 
     public int getHeight() {
         return height;
+    }
+
+    public List<Pin> getPins() {
+        return pins;
     }
 
     protected abstract Map<String, Object> dumpInternalsToYAML(ProjectOutputWriter writer);

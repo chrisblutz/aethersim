@@ -2,26 +2,35 @@ package com.github.chrisblutz.breadboard.designs.components;
 
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
-import com.github.chrisblutz.breadboard.simulation.components.WireSegment;
-import com.github.chrisblutz.breadboard.simulation.workers.SimulationWorkerTraversable;
 import com.github.chrisblutz.breadboard.utils.Vertex;
 
-import java.awt.*;
 import java.util.Map;
 
 public class Wire implements BreadboardSavable {
 
-    private Pin start, end;
+    public Pin startPin = null, endPin = null;
+    public Chip startChip = null, endChip = null; // "null" indicates an internal node (i.e. a design input/output)
+
     public Vertex[] vertices;
 
-    public WireSegment[] simulationSegments;
+    public Pin getStartPin() {
+        return startPin;
+    }
+
+    public Pin getEndPin() {
+        return endPin;
+    }
+
+    public Chip getStartChip() {
+        return startChip;
+    }
+
+    public Chip getEndChip() {
+        return endChip;
+    }
 
     public Vertex[] getVertices() {
         return vertices;
-    }
-
-    public WireSegment[] getSimulationSegments() {
-        return simulationSegments;
     }
 
     @Override

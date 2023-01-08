@@ -3,19 +3,14 @@ package com.github.chrisblutz.breadboard.simulation.components;
 import com.github.chrisblutz.breadboard.designs.components.Pin;
 import com.github.chrisblutz.breadboard.simulation.workers.SimulationWorkerTraversable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Node implements SimulationWorkerTraversable {
 
-    public boolean signalState;
+    public boolean signalState = false;
     // This will either be a single node or multiple wire segments
-    private SimulationWorkerTraversable[] nextElements;
-
-    public Pin designerPin;
-
-    public Node(SimulationWorkerTraversable[] nextElements) {
-        // Initialize in the logic low state
-        this.signalState = false;
-        this.nextElements = nextElements;
-    }
+    private final List<SimulationWorkerTraversable> nextElements = new ArrayList<>();
 
     public boolean isActive() {
         return signalState;
@@ -26,8 +21,12 @@ public class Node implements SimulationWorkerTraversable {
         this.signalState = active;
     }
 
-    @Override
-    public SimulationWorkerTraversable[] getNextTraversableElements() {
+    //@Override
+    public List<SimulationWorkerTraversable> getNextTraversableElements() {
         return nextElements;
+    }
+
+    public void addNextTraversableElement(SimulationWorkerTraversable nextElement) {
+        nextElements.add(nextElement);
     }
 }

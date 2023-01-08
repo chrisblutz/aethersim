@@ -1,15 +1,14 @@
 package com.github.chrisblutz.breadboard.components.builtins;
 
-import com.github.chrisblutz.breadboard.components.BuiltinChipTemplate;
-import com.github.chrisblutz.breadboard.components.PinTemplate;
+import com.github.chrisblutz.breadboard.designs.components.Pin;
 
 import java.util.Map;
 
 public interface BuiltinChipLogic {
 
-    PinTemplate[] getInputPinTemplates();
+    Pin[] getInputPins();
 
-    PinTemplate[] getOutputPinTemplates();
+    Pin[] getOutputPins();
 
-    Map<PinTemplate, Boolean> doTick(Map<PinTemplate, Boolean> inputStates);
+    Map<Pin, Boolean> doTick(Map<Pin, Boolean> inputStates);
 }

@@ -1,43 +1,48 @@
 package com.github.chrisblutz.breadboard.designs.components;
 
-import com.github.chrisblutz.breadboard.components.PinTemplate;
-import com.github.chrisblutz.breadboard.designs.Design;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
-import com.github.chrisblutz.breadboard.simulation.components.Node;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Pin implements BreadboardSavable {
 
-    public PinTemplate pinTemplate;
-    public int x;
-    public int y;
+    public String id;
+    public String name;
+    public boolean input;
+    public int chipX;
+    public int chipY;
+    public int designX;
+    public int designY;
 
-    private boolean input;
-    private List<Wire> connectedWires;
-    private Design parentDesign;
-    private Pin correspondingPin;
-
-    public int getX() {
-        return x;
+    public boolean isInput() {
+        return input;
     }
 
-    public int getY() {
-        return y;
+    public int getChipX() {
+        return chipX;
     }
 
-    public Node getSimulationNode() {
-        return simulationNode;
+    public int getChipY() {
+        return chipY;
+    }
+
+    public int getDesignX() {
+        return designX;
+    }
+
+    public int getDesignY() {
+        return designY;
     }
 
     @Override
     public Map<String, Object> dumpToYAML(ProjectOutputWriter writer) {
         Map<String, Object> yamlMapping = new LinkedHashMap<>();
 
-        yamlMapping.put("Id", pinTemplate.id);
-        yamlMapping.put("X", x);
-        yamlMapping.put("Y", y);
+        yamlMapping.put("Id", id);
+//        yamlMapping.put("X", x);
+//        yamlMapping.put("Y", y);
 
         return yamlMapping;
     }
@@ -46,7 +51,7 @@ public class Pin implements BreadboardSavable {
     public void loadFromYAML(Map<String, Object> yamlMapping) {
         // TODO Get pin template from ID
 
-        this.x = (int) yamlMapping.get("X");
-        this.y = (int) yamlMapping.get("Y");
+//        this.x = (int) yamlMapping.get("X");
+//        this.y = (int) yamlMapping.get("Y");
     }
 }

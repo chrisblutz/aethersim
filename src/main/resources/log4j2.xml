@@ -1,0 +1,28 @@
+<Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
+    <Properties>
+        <Property name="LOG_DIRECTORY">Logs/</Property>
+        <Property name="LOG_LAYOUT">%d{yyyy-MM-dd HH:mm:ss} %10c %5p %m%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="stdout" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_LAYOUT}"></PatternLayout>
+        </Console>
+        <RollingFile
+                name="rollingFile"
+                fileName="${LOG_DIRECTORY}/breadboard.log"
+                filePattern="${LOG_DIRECTORY}/breadboard.old.log.zip"
+                ignoreExceptions="false">
+            <PatternLayout pattern="${LOG_LAYOUT}"></PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="20MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="1" />
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="stdout" />
+            <AppenderRef ref="rollingFile" />
+        </Root>
+    </Loggers>
+</Configuration>
