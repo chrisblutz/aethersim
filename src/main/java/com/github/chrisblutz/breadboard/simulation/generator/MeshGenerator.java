@@ -76,10 +76,10 @@ public class MeshGenerator {
                 BuiltinNode node = new BuiltinNode(pin);
 
                 // Determine if this is an input or output and add it to the correct list
-                if (pin.isInput())
-                    inputNodes.add(node);
-                else
-                    outputNodes.add(node);
+//                if (pin.isInput())
+//                    inputNodes.add(node);
+//                else
+//                    outputNodes.add(node);
 
                 // Register the node with the design instance
                 designInstance.setNodeForPin(pin, node);

@@ -11,32 +11,52 @@ import java.util.Map;
 
 public abstract class ChipTemplate implements BreadboardSavable {
 
-    public String id;
-    public String name;
+    private String id;
+    private String name;
 
-    public int width;
-    public int height;
+    private int width;
+    private int height;
 
-    public List<Pin> pins = new ArrayList<>();
+    private List<Pin> pins = new ArrayList<>();
 
     public String getId() {
         return id;
+    }
+
+    protected void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
+    protected void setName(String name) {
+        this.name = name;
+    }
+
     public int getWidth() {
         return width;
+    }
+
+    protected void setWidth(int width) {
+        this.width = width;
     }
 
     public int getHeight() {
         return height;
     }
 
+    protected void setHeight(int height) {
+        this.height = height;
+    }
+
     public List<Pin> getPins() {
         return pins;
+    }
+
+    protected void setPins(List<Pin> pins) {
+        this.pins = pins;
     }
 
     protected abstract Map<String, Object> dumpInternalsToYAML(ProjectOutputWriter writer);

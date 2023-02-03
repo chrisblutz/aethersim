@@ -2,24 +2,26 @@ package com.github.chrisblutz.breadboard.simulation.workers;
 
 import com.github.chrisblutz.breadboard.logging.BreadboardLogging;
 import com.github.chrisblutz.breadboard.simulation.components.BuiltinChip;
+import com.github.chrisblutz.breadboard.simulation.generator.DesignInstance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class WorkerScheduler {
 
     private static final ExecutorService simulationThreadPool = Executors.newFixedThreadPool(8);
     public static List<BuiltinChip> builtinChips = new ArrayList<>();
 
+    private static final List<Future<Worker[]>> currentChipWorkerFutures = new ArrayList<>();
     private static final List<Future<?>> currentWorkerFutures = new ArrayList<>();
     private static final List<Worker> currentQueuedWorkers = new ArrayList<>();
     private static final List<Worker> currentTickWorkers = new ArrayList<>();
+
+    private static WorkerLoop workerLoop = new WorkerLoop(1000);
+    private static DesignInstance topLevelDesignInstance = null;
 
     public static void registerBuiltinChip(BuiltinChip builtinChip) {
         builtinChips.add(builtinChip);
@@ -42,14 +44,13 @@ public class WorkerScheduler {
 
         long startTimeMillis = System.currentTimeMillis();
 
-        List<Future<Worker[]>> chipResults = new ArrayList<>();
-
         // For each builtin chip, add it to the thread pool
         for (BuiltinChip builtinChip : builtinChips)
-            chipResults.add(simulationThreadPool.submit(builtinChip));
+            currentChipWorkerFutures.add(simulationThreadPool.submit(builtinChip));
 
         // For each future we generated above, queue the returned workers
-        for (Future<Worker[]> result : chipResults) {
+        for (int index = 0; index < currentChipWorkerFutures.size(); index++) {
+            Future<Worker[]> result = currentChipWorkerFutures.get(index);
             try {
                 queueAll(Arrays.asList(result.get()));
             } catch (ExecutionException|InterruptedException e) {
@@ -72,7 +73,8 @@ public class WorkerScheduler {
         // For each future we generated above, wait for it to complete
         // Count workers as we go
         int count = 0;
-        for (Future<?> result : currentWorkerFutures) {
+        for (int index = 0; index < currentWorkerFutures.size(); index++) {
+            Future<?> result = currentWorkerFutures.get(index);
             try {
                 result.get();
                 count++;
@@ -82,6 +84,7 @@ public class WorkerScheduler {
         }
 
         // Clear the current tick workers and futures
+        currentChipWorkerFutures.clear();
         currentTickWorkers.clear();
         currentWorkerFutures.clear();
 
@@ -96,5 +99,37 @@ public class WorkerScheduler {
         BreadboardLogging.getSimulationLogger().debug("Simulation tick completed in " + totalTime  + "ms.");
 
         return totalTime;
+    }
+
+    public static DesignInstance getTopLevelDesignInstance() {
+        return topLevelDesignInstance;
+    }
+
+    public static void setTopLevelDesignInstance(DesignInstance topLevelDesignInstance) {
+        WorkerScheduler.topLevelDesignInstance = topLevelDesignInstance;
+    }
+
+    public static void startSimulation() {
+        workerLoop.start();
+    }
+
+    public static void setTargetTicksPerSecond(int ticksPerSecond) {
+        // Validate input
+        if (ticksPerSecond < 1)
+            ticksPerSecond = 1;
+        else if (ticksPerSecond > 1000)
+            ticksPerSecond = 1000;
+
+        long targetTickDuration = 1000 / ticksPerSecond;
+
+        workerLoop.setTargetTickDuration(targetTickDuration);
+    }
+
+    public static void stopSimulation() {
+        workerLoop.stop();
+
+        // Clear all active states in the design instance
+        if (getTopLevelDesignInstance() != null)
+            getTopLevelDesignInstance().clearSimulationStates();
     }
 }

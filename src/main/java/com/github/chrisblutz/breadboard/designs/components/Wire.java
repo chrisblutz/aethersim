@@ -5,13 +5,32 @@ import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 import com.github.chrisblutz.breadboard.utils.Vertex;
 
 import java.util.Map;
+import java.util.Set;
 
 public class Wire implements BreadboardSavable {
 
-    public Pin startPin = null, endPin = null;
-    public Chip startChip = null, endChip = null; // "null" indicates an internal node (i.e. a design input/output)
+    private Pin startPin = null, endPin = null;
+    private Chip startChip = null, endChip = null; // "null" indicates an internal node (i.e. a design input/output)
 
-    public Vertex[] vertices;
+    private Vertex[] vertices;
+
+    public void setStartPin(Pin startPin) {
+        setStartPin(null, startPin);
+    }
+
+    public void setStartPin(Chip startChip, Pin startPin) {
+        this.startChip = startChip;
+        this.startPin = startPin;
+    }
+
+    public void setEndPin(Pin endPin) {
+        setEndPin(null, endPin);
+    }
+
+    public void setEndPin(Chip endChip, Pin endPin) {
+        this.endChip = endChip;
+        this.endPin = endPin;
+    }
 
     public Pin getStartPin() {
         return startPin;
@@ -31,6 +50,21 @@ public class Wire implements BreadboardSavable {
 
     public Vertex[] getVertices() {
         return vertices;
+    }
+
+    public void setVertices(Vertex[] vertices) {
+        this.vertices = vertices;
+    }
+
+    public Set<Pin> getConnectedPins() {
+        if (startPin != null && endPin != null)
+            return Set.of(startPin, endPin);
+        else if (startPin != null)
+            return Set.of(startPin);
+        else if (endPin != null)
+            return Set.of(endPin);
+        else
+            return Set.of();
     }
 
     @Override

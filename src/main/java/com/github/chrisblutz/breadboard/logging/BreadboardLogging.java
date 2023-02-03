@@ -7,6 +7,7 @@ public class BreadboardLogging {
 
     private static Logger allPurposeLogger = LogManager.getLogger("Breadboard");
     private static Logger simulationLogger = LogManager.getLogger("Simulation");
+    private static Logger interfaceLogger = LogManager.getLogger("Interface");
 
     public static Logger getLogger() {
         return allPurposeLogger;
@@ -16,9 +17,15 @@ public class BreadboardLogging {
         return simulationLogger;
     }
 
+    public static Logger getInterfaceLogger() {
+        return interfaceLogger;
+    }
+
     public static void logEnvironmentInformation() {
+        getLogger().info("Environment Information:");
+
         // Collect basic operating system information
-        String os = String.format("Operating System: %s (%s) [%s]",
+        String os = String.format("    Operating System: %s (%s) [%s]",
                 System.getProperty("os.name"),
                 System.getProperty("os.version"),
                 System.getProperty("os.arch")
@@ -26,7 +33,7 @@ public class BreadboardLogging {
         getLogger().info(os);
 
         // Collect information about the Java version
-        String java = String.format("Java: Java %s (%s)",
+        String java = String.format("    Java: Java %s (%s)",
                 System.getProperty("java.version"),
                 System.getProperty("java.vendor")
         );
@@ -34,12 +41,12 @@ public class BreadboardLogging {
 
         // Collect basic information on system resources
         String maxMemory = LogUtils.formatBytes(Runtime.getRuntime().totalMemory());
-        String memory = String.format("JVM Memory: %s",
+        String memory = String.format("    JVM Memory: %s",
             maxMemory
         );
         getLogger().info(memory);
         int processorCount = Runtime.getRuntime().availableProcessors();
-        String processors = String.format("Logical Threads: %d",
+        String processors = String.format("    Logical Threads: %d",
                 processorCount
         );
         getLogger().info(processors);

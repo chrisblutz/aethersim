@@ -20,9 +20,9 @@
         </RollingFile>
     </Appenders>
     <Loggers>
-        <Root level="debug">
-            <AppenderRef ref="stdout" />
-            <AppenderRef ref="rollingFile" />
+        <Root level="trace">
+            <AppenderRef ref="stdout" level="trace" />
+            <AppenderRef ref="rollingFile" level="info" />
         </Root>
     </Loggers>
 </Configuration>

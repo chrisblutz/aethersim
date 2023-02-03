@@ -8,32 +8,59 @@ import java.util.Map;
 
 public class Pin implements BreadboardSavable {
 
-    public String id;
-    public String name;
-    public boolean input;
-    public int chipX;
-    public int chipY;
-    public int designX;
-    public int designY;
+    private String id;
+    private String name;
+    private int chipX;
+    private int chipY;
+    private int designX;
+    private int designY;
 
-    public boolean isInput() {
-        return input;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getChipX() {
         return chipX;
     }
 
+    public void setChipX(int chipX) {
+        this.chipX = chipX;
+    }
+
     public int getChipY() {
         return chipY;
+    }
+
+    public void setChipY(int chipY) {
+        this.chipY = chipY;
     }
 
     public int getDesignX() {
         return designX;
     }
 
+    public void setDesignX(int designX) {
+        this.designX = designX;
+    }
+
     public int getDesignY() {
         return designY;
+    }
+
+    public void setDesignY(int designY) {
+        this.designY = designY;
     }
 
     @Override

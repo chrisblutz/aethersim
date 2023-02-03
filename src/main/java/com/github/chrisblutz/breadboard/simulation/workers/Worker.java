@@ -1,10 +1,10 @@
 package com.github.chrisblutz.breadboard.simulation.workers;
 
+import com.github.chrisblutz.breadboard.simulation.components.BuiltinNode;
 import com.github.chrisblutz.breadboard.simulation.components.Node;
 import com.github.chrisblutz.breadboard.simulation.components.NodeConnector;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public class Worker implements Runnable, Cloneable {
 
@@ -20,6 +20,14 @@ public class Worker implements Runnable, Cloneable {
 
     public boolean isActive() {
         return signalActive;
+    }
+
+    public void setActive(boolean signalActive) {
+        this.signalActive = signalActive;
+    }
+
+    public void setCurrentElement(SimulationWorkerTraversable currentElement) {
+        this.currentElement = currentElement;
     }
 
     @Override
@@ -94,18 +102,22 @@ public class Worker implements Runnable, Cloneable {
             currentElement.setSignalState(isActive());
 
             // If the current element is a connector, traverse to the next element and continue
-            if (currentElement instanceof NodeConnector) {
-                currentElement = ((NodeConnector) currentElement).getNextTraversableElement();
+            if (currentElement instanceof NodeConnector nodeConnector) {
+                currentElement = nodeConnector.getNextTraversableElement();
                 continue;
             }
 
             // If the current element is a node, clone this worker as many times as necessary
-            if (currentElement instanceof Node) {
-                List<SimulationWorkerTraversable> nextElements = ((Node) currentElement).getNextTraversableElements();
+            if (currentElement instanceof Node node) {
+                List<SimulationWorkerTraversable> nextElements = node.getNextTraversableElements();
 
                 // If there are no next elements for the node, break
-                if (nextElements.size() == 0)
+                if (nextElements.size() == 0) {
+                    // If this is a built-in node, set this worker as available
+                    if (node instanceof BuiltinNode builtinNode)
+                        builtinNode.setAvailableWorker(this);
                     break;
+                }
 
                 // Don't clone on the first element, since we can continue with this worker there
                 currentElement = nextElements.get(0);

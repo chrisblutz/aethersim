@@ -1,0 +1,29 @@
+package com.github.chrisblutz.breadboard.ui.toolkit.builtin.input;
+
+import com.github.chrisblutz.breadboard.ui.toolkit.builtin.listeners.OnChangeListener;
+import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
+
+public class UIValidatedTextField extends UITextField {
+
+    public UIValidatedTextField(String validationRegex, OnChangeListener<String> onTextChangeListener) {
+        super(onTextChangeListener);
+
+        setValidationRegex(validationRegex);
+    }
+
+    public UIValidatedTextField(String validationRegex, String placeholderText, OnChangeListener<String> onTextChangeListener) {
+        super(placeholderText, onTextChangeListener);
+
+        setValidationRegex(validationRegex);
+    }
+
+    @Override
+    public String getValidationRegex() {
+        return super.getValidationRegex();
+    }
+
+    @Override
+    public void setValidationRegex(String validationRegex) {
+        super.setValidationRegex(validationRegex);
+    }
+}

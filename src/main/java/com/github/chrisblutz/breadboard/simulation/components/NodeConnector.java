@@ -8,7 +8,7 @@ import java.util.List;
 
 public class NodeConnector implements SimulationWorkerTraversable {
 
-    public boolean signalState = false;
+    public volatile boolean signalState = false;
     // This should be a single node
     private SimulationWorkerTraversable nextElement;
 

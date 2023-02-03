@@ -10,21 +10,33 @@ import java.util.Map;
 
 public class Chip implements BreadboardSavable {
 
-    public int x;
-    public int y;
+    private int x;
+    private int y;
 
-    public ChipTemplate chipTemplate;
+    private ChipTemplate chipTemplate;
 
     public int getX() {
         return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
     }
 
     public int getY() {
         return y;
     }
 
+    public void setY(int y) {
+        this.y = y;
+    }
+
     public ChipTemplate getChipTemplate() {
         return chipTemplate;
+    }
+
+    public void setChipTemplate(ChipTemplate chipTemplate) {
+        this.chipTemplate = chipTemplate;
     }
 
     @Override

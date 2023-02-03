@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Node implements SimulationWorkerTraversable {
 
-    public boolean signalState = false;
+    public volatile boolean signalState = false;
     // This will either be a single node or multiple wire segments
     private final List<SimulationWorkerTraversable> nextElements = new ArrayList<>();
 

@@ -33,7 +33,7 @@ public class Project implements BreadboardSavable {
         // For each project-specific chip, create a new file in the project for it
         for (ChipTemplate chipTemplate : projectSpecificChipTemplates) {
             try {
-                writer.writeYamlFile("chips", chipTemplate.id, chipTemplate.dumpToYAML(writer));
+                writer.writeYamlFile("chips", chipTemplate.getId(), chipTemplate.dumpToYAML(writer));
             } catch (IOException e) {
                 // TODO
                 e.printStackTrace();

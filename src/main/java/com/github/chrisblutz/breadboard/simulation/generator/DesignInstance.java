@@ -39,4 +39,18 @@ public class DesignInstance {
     public void setDesignInstanceForChip(Chip chip, DesignInstance designInstance) {
         designInstanceMapping.put(chip, designInstance);
     }
+
+    public void clearSimulationStates() {
+        // Clear all node states
+        for (Node node : nodeMapping.values())
+            node.setSignalState(false);
+
+        // Clear all node connector states
+        for (NodeConnector nodeConnector : nodeConnectorMapping.values())
+            nodeConnector.setSignalState(false);
+
+        // Call this method on all child design instances
+        for (DesignInstance designInstance : designInstanceMapping.values())
+            designInstance.clearSimulationStates();
+    }
 }
