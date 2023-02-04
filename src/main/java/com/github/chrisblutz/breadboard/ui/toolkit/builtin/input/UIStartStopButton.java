@@ -1,9 +1,10 @@
 package com.github.chrisblutz.breadboard.ui.toolkit.builtin.input;
 
 import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIStroke;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.listeners.OnClickListener;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.UITheme;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
 import java.awt.*;
@@ -34,8 +35,8 @@ public class UIStartStopButton extends UIButton {
 
     @Override
     protected void calculateMinimumSize() {
-        UIDimension startTextBounds = getGraphicsContext().getStringBounds(font, startText);
-        UIDimension stopTextBounds = getGraphicsContext().getStringBounds(font, stopText);
+        UIDimension startTextBounds = getGraphicsContext().getStringBounds(font.getInternalFont(1f), startText);
+        UIDimension stopTextBounds = getGraphicsContext().getStringBounds(font.getInternalFont(1f), stopText);
         UIDimension maxBounds = new UIDimension(
                 Math.max(startTextBounds.getWidth(), stopTextBounds.getWidth()) + (getPadding().getPaddingLeft() + getPadding().getPaddingLeft()),
                 Math.max(startTextBounds.getHeight(), stopTextBounds.getHeight()) + (getPadding().getPaddingTop() + getPadding().getPaddingBottom())
@@ -65,11 +66,11 @@ public class UIStartStopButton extends UIButton {
                     ThemeKeys.Colors.UI.START_STOP_BUTTON_BACKGROUND_STOPPED
             ));
 
-        graphics.getInternalGraphics().fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+        graphics.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
 
         // Draw text
         graphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.TEXT_FIELD_FOREGROUND));
-        graphics.getInternalGraphics().setFont(font);
+        graphics.setFont(font);
         FontMetrics metrics = graphics.getInternalGraphics().getFontMetrics();
         String text = started ? stopText : startText;
         graphics.drawString(text, (getWidth() / 2) - (metrics.stringWidth(text) / 2), (getHeight() / 2) + ((metrics.getAscent() - metrics.getDescent()) / 2));
@@ -81,8 +82,8 @@ public class UIStartStopButton extends UIButton {
                     ThemeKeys.Colors.UI.START_STOP_BUTTON_BORDER_STARTED_FOCUSED :
                     ThemeKeys.Colors.UI.START_STOP_BUTTON_BORDER_STOPPED_FOCUSED
             ));
-            graphics.getInternalGraphics().setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0, new float[] {1, 2}, 0));
-            graphics.getInternalGraphics().drawRoundRect(2, 2, getWidth() - 5, getHeight() - 5, 10, 10);
+            graphics.setStroke(UIStroke.dashed(1, UIStroke.Cap.BUTT, UIStroke.Join.ROUND, new float[] {1, 2}));
+            graphics.drawRoundRect(2, 2, getWidth() - 5, getHeight() - 5, 10, 10);
         }
     }
 }

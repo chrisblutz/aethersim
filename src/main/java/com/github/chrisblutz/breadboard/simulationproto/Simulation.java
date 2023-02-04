@@ -39,8 +39,7 @@ public class Simulation {
     }
 
     public static void reset() {
-        // Reset the simulator if it's not null
-        if (simulator != null)
-            simulator.reset();
+        // Mark the simulator for reset via the timer
+        TIMER.setResetFlag(true);
     }
 }

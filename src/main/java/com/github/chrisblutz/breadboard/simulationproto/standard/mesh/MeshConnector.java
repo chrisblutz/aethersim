@@ -21,10 +21,18 @@ public class MeshConnector {
         this.decider = decider;
         this.activeLow = activeLow;
         this.currentlyConnected = activeLow;
+        this.connecting = activeLow;
     }
 
     public boolean isConnected() {
         return currentlyConnected;
+    }
+
+    public void reset() {
+        // Reset this connector to its default state
+        this.currentlyConnected = activeLow;
+        this.connecting = activeLow;
+        this.currentDelay = -1;
     }
 
     public void tick() {

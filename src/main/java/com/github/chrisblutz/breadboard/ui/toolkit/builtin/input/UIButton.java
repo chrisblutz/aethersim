@@ -3,7 +3,7 @@ package com.github.chrisblutz.breadboard.ui.toolkit.builtin.input;
 import com.github.chrisblutz.breadboard.ui.toolkit.*;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.listeners.OnClickListener;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.UITheme;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Padding;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
@@ -19,7 +19,7 @@ public class UIButton extends UIComponent implements UIInteractable, UIFocusable
     private OnClickListener onClickListener;
     protected String text; // TODO private
     private Padding padding = new Padding(5, 5, 5, 5); // TODO defaults
-    protected Font font = UITheme.getFont(ThemeKeys.Fonts.UI.BUTTON_DEFAULT); // TODO private
+    protected UIFont font = UITheme.getFont(ThemeKeys.Fonts.UI.BUTTON_DEFAULT); // TODO private
 
     public UIButton(String text, OnClickListener onClickListener) {
         this.text = text;
@@ -28,11 +28,11 @@ public class UIButton extends UIComponent implements UIInteractable, UIFocusable
         calculateMinimumSize();
     }
 
-    public Font getFont() {
+    public UIFont getFont() {
         return font;
     }
 
-    public void setFont(Font font) {
+    public void setFont(UIFont font) {
         this.font = font;
         calculateMinimumSize();
     }
@@ -65,7 +65,7 @@ public class UIButton extends UIComponent implements UIInteractable, UIFocusable
     }
 
     protected void calculateMinimumSize() {
-        UIDimension textBounds = getGraphicsContext().getStringBounds(getFont(), getText());
+        UIDimension textBounds = getGraphicsContext().getStringBounds(getFont().getInternalFont(1f), getText());
         setMinimumSize(textBounds.add(
                 padding.getPaddingLeft() + padding.getPaddingRight(),
                 padding.getPaddingTop() + padding.getPaddingBottom()
@@ -82,19 +82,19 @@ public class UIButton extends UIComponent implements UIInteractable, UIFocusable
         else
             graphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.BUTTON_BACKGROUND));
 
-        graphics.getInternalGraphics().fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+        graphics.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
 
         // Draw text
         graphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.TEXT_FIELD_FOREGROUND));
-        graphics.getInternalGraphics().setFont(getFont());
+        graphics.setFont(getFont());
         FontMetrics metrics = graphics.getInternalGraphics().getFontMetrics();
         graphics.drawString(getText(), (getWidth() / 2) - (metrics.stringWidth(getText()) / 2), (getHeight() / 2) + ((metrics.getAscent() - metrics.getDescent()) / 2));
 
         // If the button is focused, draw the focus border
         if (isFocused()) {
             graphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.BUTTON_BORDER_FOCUSED));
-            graphics.getInternalGraphics().setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0, new float[] {1, 2}, 0));
-            graphics.getInternalGraphics().drawRoundRect(2, 2, getWidth() - 5, getHeight() - 5, 10, 10);
+            graphics.setStroke(UIStroke.dashed(1, UIStroke.Cap.BUTT, UIStroke.Join.ROUND, new float[] {1, 2}));
+            graphics.drawRoundRect(2, 2, getWidth() - 5, getHeight() - 5, 10, 10);
         }
     }
 

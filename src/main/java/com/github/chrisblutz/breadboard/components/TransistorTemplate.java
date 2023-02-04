@@ -2,7 +2,17 @@ package com.github.chrisblutz.breadboard.components;
 
 import com.github.chrisblutz.breadboard.designs.components.Pin;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
+import com.github.chrisblutz.breadboard.simulationproto.LogicState;
+import com.github.chrisblutz.breadboard.simulationproto.SimulatedDesign;
+import com.github.chrisblutz.breadboard.ui.render.designs.DesignEditorUtils;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIColor;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIStroke;
+import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 
+import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -38,6 +48,51 @@ public class TransistorTemplate extends ChipTemplate {
 
     public Pin getActiveSignalOutput() {
         return isActiveLow() ? PNP_COLLECTOR : NPN_EMITTER;
+    }
+
+    @Override
+    public void renderChipPackage(UIGraphics graphics, SimulatedDesign design, double scale, double offsetX, double offsetY) { // TODO Graphics api
+        UIColor wireColor = UITheme.getColor(ThemeKeys.Colors.Design.CHIP_FOREGROUND);
+        UIColor textColor = UITheme.getColor(ThemeKeys.Colors.Design.CHIP_FOREGROUND);
+
+        // Set base color
+        UIColor baseColor = DesignEditorUtils.getColorForLogicState(design.getStateForPin(getBase()));
+        graphics.setColor(baseColor);
+        graphics.setStroke(UIStroke.dashed(2, UIStroke.Cap.BUTT, UIStroke.Join.ROUND, new float[] {4f, 4f}));
+        graphics.drawLine(0, (int) (3 * scale), (int) (2 * scale), (int) (3 * scale));
+        graphics.drawLine((int) (2 * scale), (int) (3 * scale), (int) (2 * scale), (int) (2 * scale));
+
+        // Set input color
+        UIColor inputColor = DesignEditorUtils.getColorForLogicState(design.getStateForPin(getActiveSignalInput()));
+        graphics.setColor(inputColor);
+        graphics.setStroke(UIStroke.solid(3, UIStroke.Cap.ROUND, UIStroke.Join.ROUND));
+        graphics.drawLine(0, (int) scale, (int) scale, (int) scale);
+        graphics.drawLine((int) scale, (int) scale, (int) (3 * scale / 2), (int) (2 * scale));
+
+        // Set output color
+        UIColor outputColor = DesignEditorUtils.getColorForLogicState(design.getStateForPin(getActiveSignalOutput()));
+        graphics.setColor(outputColor);
+        graphics.drawLine((int) (5 * scale / 2), (int) (2 * scale), (int) (3 * scale), (int) scale);
+        graphics.drawLine((int) (3 * scale), (int) scale, (int) (4 * scale), (int) scale);
+        graphics.drawLine((int) (4 * scale), (int) scale, (int) (9 * scale / 2), (int) (2 * scale));
+        graphics.drawLine((int) (9 * scale / 2), (int) (2 * scale), (int) (6 * scale), (int) (2 * scale));
+
+        // Set connector color if connected
+        if (design.getStateForPin(activeLow ? PNP_BASE : NPN_BASE) == (activeLow ? LogicState.LOW : LogicState.HIGH))
+            graphics.setColor(inputColor);
+        else
+            graphics.setColor(DesignEditorUtils.getColorForLogicState(LogicState.UNCONNECTED));
+        graphics.drawLine((int) scale, (int) (2 * scale), (int) (3 * scale), (int) (2 * scale));
+
+        graphics.setColor(textColor);
+        graphics.setFont(UITheme.getFont(ThemeKeys.Fonts.UI.TEXT_DEFAULT)); // TODO
+
+        // Draw the chip text in the center of the chip
+        String chipText = getName();
+        FontMetrics metrics = graphics.getInternalGraphics().getFontMetrics();
+        Rectangle2D stringBounds = metrics.getStringBounds(chipText, graphics.getInternalGraphics());
+        int stringHeightOffset = metrics.getAscent() - metrics.getDescent();
+        graphics.drawString(chipText, (int) ((scale * getWidth()) - stringBounds.getWidth() + offsetX - (scale / 2)), (int) ((scale * getHeight()) + offsetY - (scale / 2))); // TODO
     }
 
     @Override

@@ -146,7 +146,6 @@ public class UIScroll extends UIContainer implements UIInteractable, UIFocusable
 
     @Override
     public boolean onMouseScrolled(int scrollAmount) {
-        System.out.println("Scroll!");
         return false;
     }
 

@@ -8,7 +8,9 @@ import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.MeshEdge;
 import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.MeshVertex;
 import com.github.chrisblutz.breadboard.simulationproto.standard.threading.MeshSimulationCoordinator;
 import com.github.chrisblutz.breadboard.ui.BreadboardUI;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
 
+import java.awt.image.BufferedImage;
 import java.util.Set;
 
 public class Breadboard {

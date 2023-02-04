@@ -5,11 +5,15 @@ import com.github.chrisblutz.breadboard.designs.components.Chip;
 import com.github.chrisblutz.breadboard.designs.components.ChipPin;
 import com.github.chrisblutz.breadboard.designs.components.Pin;
 import com.github.chrisblutz.breadboard.designs.components.Wire;
+import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
+import com.github.chrisblutz.breadboard.ui.toolkit.shape.Rectangle;
+import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
 import com.github.chrisblutz.breadboard.utils.Vertex;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,11 +23,11 @@ public class DesignRenderer {
     private static final double PIN_RADIUS = 0.4;
     private static final double WIRE_ARC_MIDPOINT_GUIDE = 0.5 - ((Math.sqrt(2) / 2) / 2);
 
-    private final Map<ChipPin, Ellipse2D.Double> pinShapes = new LinkedHashMap<>();
+    private final Map<ChipPin, Ellipse> pinShapes = new LinkedHashMap<>();
     private final Map<Wire, Path2D.Double> wireShapes = new LinkedHashMap<>();
-    private final Map<Chip, Rectangle2D.Double> chipShapes = new LinkedHashMap<>();
+    private final Map<Chip, RoundRectangle> chipShapes = new LinkedHashMap<>();
 
-    public Ellipse2D.Double getPinShape(ChipPin pin) {
+    public Ellipse getPinShape(ChipPin pin) {
         return pinShapes.get(pin);
     }
 
@@ -31,7 +35,7 @@ public class DesignRenderer {
         return wireShapes.get(wire);
     }
 
-    public Rectangle2D.Double getChipShape(Chip chip) {
+    public RoundRectangle getChipShape(Chip chip) {
         return chipShapes.get(chip);
     }
 
@@ -53,7 +57,7 @@ public class DesignRenderer {
         return null;
     }
 
-    public void generate(Design design) {
+    public void generate(Design design, double scale, double offsetX, double offsetY) {
         // Clear all existing shapes
         pinShapes.clear();
         wireShapes.clear();
@@ -61,50 +65,52 @@ public class DesignRenderer {
 
         // Generate shapes for all chips in the design
         for (Chip chip : design.getChips()) {
-            generateChipShape(chip);
+            generateChipShape(chip, scale, offsetX, offsetY);
 
             // Generate shapes for all pins in the chip
             for (Pin pin : chip.getChipTemplate().getPins()) {
-                generatePinShape(chip, pin);
+                generatePinShape(chip, pin, scale, offsetX, offsetY);
             }
         }
 
         // Generate shapes for all wires in the design
         for (Wire wire : design.getWires()) {
-            generateWireShape(wire);
+            generateWireShape(wire, scale, offsetX, offsetY);
         }
 
         // Generate shapes for all pins in the design
         for (Pin pin : design.getPins()) {
-            generatePinShape(null, pin);
+            generatePinShape(null, pin, scale, offsetX, offsetY);
         }
     }
 
-    private void generateChipShape(Chip chip) {
-        Rectangle2D.Double chipShape = new Rectangle2D.Double(
-                chip.getX(),
-                chip.getY(),
-                chip.getChipTemplate().getWidth(),
-                chip.getChipTemplate().getHeight()
+    private void generateChipShape(Chip chip, double scale, double offsetX, double offsetY) {
+        RoundRectangle chipShape = new RoundRectangle(
+                (scale * chip.getX()) + offsetX,
+                (scale * chip.getY()) + offsetY,
+                (scale * chip.getChipTemplate().getWidth()),
+                (scale * chip.getChipTemplate().getHeight()),
+                (scale * 0.75),
+                (scale * 0.75) // TODO default
         );
         chipShapes.put(chip, chipShape);
     }
 
-    private void generatePinShape(Chip chip, Pin pin) {
+    private void generatePinShape(Chip chip, Pin pin, double scale, double offsetX, double offsetY) {
         // Calculate pin X/Y based on whether it's attached to a chip
         double pinX = (chip == null ? pin.getDesignX() : chip.getX() + pin.getChipX());
         double pinY = (chip == null ? pin.getDesignY() : chip.getY() + pin.getChipY());
         // Create the shape
-        Ellipse2D.Double pinShape = new Ellipse2D.Double(
-                pinX - PIN_RADIUS,
-                pinY - PIN_RADIUS,
-                PIN_RADIUS * 2,
-                PIN_RADIUS * 2
+        Ellipse pinShape = new Ellipse(
+                (scale * (pinX - PIN_RADIUS)) + offsetX,
+                (scale * (pinY - PIN_RADIUS)) + offsetY,
+                (scale * PIN_RADIUS * 2),
+                (scale * PIN_RADIUS * 2)
         );
         pinShapes.put(new ChipPin(chip, pin), pinShape);
     }
 
-    private void generateWireShape(Wire wire) {
+    private void generateWireShape(Wire wire, double scale, double offsetX, double offsetY) {
         Path2D.Double wireShape = new Path2D.Double();
 
         // Build path based on wire vertices
@@ -127,7 +133,10 @@ public class DesignRenderer {
 
                 // If this is the first point on the path, set the initial point
                 if (vertexIndex == 0 && segmentIndex == 0)
-                    wireShape.moveTo(startX, startY);
+                    wireShape.moveTo(
+                            (scale * startX) + offsetX,
+                            (scale * startY) + offsetY
+                    );
 
                 // If we're on a corner, render segments in halves
                 if ((vertexIndex > 0 && segmentIndex == 0) || (vertexIndex < vertices.length - 2 && segmentIndex == length - 1)) {
@@ -143,10 +152,18 @@ public class DesignRenderer {
                         double quadControlY = startY + (2 * yOffset * WIRE_ARC_MIDPOINT_GUIDE);
 
                         // Draw the quad curve
-                        wireShape.quadTo(quadControlX, quadControlY, edgeMidX, edgeMidY);
+                        wireShape.quadTo(
+                                (scale * quadControlX) + offsetX,
+                                (scale * quadControlY) + offsetY,
+                                (scale * edgeMidX) + offsetX,
+                                (scale * edgeMidY) + offsetY
+                        );
                     } else {
                         // Draw the straight line
-                        wireShape.lineTo(edgeMidX, edgeMidY);
+                        wireShape.lineTo(
+                                (scale * edgeMidX) + offsetX,
+                                (scale * edgeMidY) + offsetY
+                        );
                     }
 
                     // If we're going into a corner, draw the first half of a corner
@@ -169,14 +186,25 @@ public class DesignRenderer {
                         double quadControlY = endY + (-2 * yOffset * WIRE_ARC_MIDPOINT_GUIDE);
 
                         // Draw the quad curve
-                        wireShape.quadTo(quadControlX, quadControlY, cornerArcMidX, cornerArcMidY);
+                        wireShape.quadTo(
+                                (scale * quadControlX) + offsetX,
+                                (scale * quadControlY) + offsetY,
+                                (scale * cornerArcMidX) + offsetX,
+                                (scale * cornerArcMidY) + offsetY
+                        );
                     } else {
                         // Draw the straight line
-                        wireShape.lineTo(endX, endY);
+                        wireShape.lineTo(
+                                (scale * endX) + offsetX,
+                                (scale * endY) + offsetY
+                        );
                     }
                 } else {
                     // Draw the straight line
-                    wireShape.lineTo(endX, endY);
+                    wireShape.lineTo(
+                            (scale * endX) + offsetX,
+                            (scale * endY) + offsetY
+                    );
                 }
             }
         }

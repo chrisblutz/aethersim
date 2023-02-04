@@ -17,20 +17,16 @@ public class MeshGenerator {
     public static MeshSimulationConfig generate(Design design) {
         // First, create a mesh design that contains all the connection information for the pins and wires
         MeshDesign meshDesign = MeshDesign.from(design);
-        System.out.println("Sim1");
 
         // Create the overall simulation configuration so we can fill it in as we go in generation
         MeshSimulationConfig simulationConfig = new MeshSimulationConfig();
-        System.out.println("Sim4");
 
         // Build all the mesh vertices according to the unique sets of pins determined by the mesh design
         Map<ChipPin, MeshVertex> pinVertices = generateVerticesForPins(simulationConfig, meshDesign);
-        System.out.println("Sim5");
 
         // Generate the top-level simulated design
         MeshSimulatedDesign topLevelDesign = generateFromChip(simulationConfig, pinVertices, null, design);
         simulationConfig.setTopLevelSimulatedDesign(topLevelDesign);
-        System.out.println("Sim7");
 
         // Return the finalized instance
         return simulationConfig;

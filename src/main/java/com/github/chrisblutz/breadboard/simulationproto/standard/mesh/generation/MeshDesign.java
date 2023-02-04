@@ -75,7 +75,6 @@ public class MeshDesign {
         // Start with the total set of pins in this design, then work backwards until we have none left
         Set<ChipPin> remainingSet = new LinkedHashSet<>(pins);
         while (!remainingSet.isEmpty()) {
-            System.out.println(remainingSet.size());
             // Starting with a random pin from the set, build a set of all pins that one is connected to
             Set<ChipPin> currentSet = new LinkedHashSet<>();
             ChipPin origin = remainingSet.iterator().next();
@@ -85,7 +84,6 @@ public class MeshDesign {
 
             // Add the current set to the list of meshed pins
             uniqueMeshedPinSets.add(currentSet);
-            System.out.println("Sets: " + currentSet.size());
         }
     }
 
@@ -113,12 +111,8 @@ public class MeshDesign {
         // Create a new mesh design and populate it with pins and wires
         MeshDesign meshDesign = new MeshDesign();
         meshDesign.generateFromChipDesign(null, design);
-        for (ChipPin pin : meshDesign.wireConnections.keySet())
-            System.out.println("Pin " + pin.pin().hashCode() + ", " + (pin.chip() == null ? "NULL" : pin.chip().hashCode()) + ": " + meshDesign.wireConnections.get(pin).size());
-        System.out.println("Sim6");
         // Generate the list of unique "meshed" pin sets (all pins that are connected to one another)
         meshDesign.generateUniqueSets();
-        System.out.println("Sim22");
         // After generation, clear the wire connection map to avoid keeping it in memory unnecessarily
         meshDesign.wireConnections.clear();
         return meshDesign;

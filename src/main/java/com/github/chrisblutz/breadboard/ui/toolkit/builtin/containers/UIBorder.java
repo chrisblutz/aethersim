@@ -4,10 +4,9 @@ import com.github.chrisblutz.breadboard.ui.toolkit.UIComponent;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIContainer;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.UITheme;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
-import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 

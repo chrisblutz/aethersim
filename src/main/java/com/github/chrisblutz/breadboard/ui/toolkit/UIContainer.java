@@ -133,7 +133,6 @@ public abstract class UIContainer extends UIComponent {
                 if (!foundFocus) {
                     if (component instanceof UIFocusable focusable &&
                             focusable.isFocused()) {
-                        System.out.println("Found focused " + component);
                         // If we get here, the current component is focused.  If it's a container,
                         // see if it has a focusable child.  Otherwise, mark that we found the
                         // focused component and continue
@@ -146,7 +145,6 @@ public abstract class UIContainer extends UIComponent {
                         foundFocus = true;
                     } else if (component instanceof UIContainer containerComponent &&
                             containerComponent.hasFocusedChild()) {
-                        System.out.println("Found with focused child " + component);
                         // Get the next focusable element from the child container
                         nextFocusable = containerComponent.getAdjacentFocusable(searchForward);
                         // If there is no adjacent one in the child, we've found the focused element

@@ -16,10 +16,8 @@ public class MeshSimulator extends Simulator {
     public SimulatedDesign initialize(Design design) {
         // Generate the simulation config for the design
         MeshSimulationConfig simulationConfig = MeshGenerator.generate(design);
-        System.out.println("Sim2");
         // Configure the coordinator with the new configuration
         coordinator.configure(simulationConfig);
-        System.out.println("Sim");
         // Return the generated simulated design
         return simulationConfig.getTopLevelSimulatedDesign();
     }
@@ -45,5 +43,6 @@ public class MeshSimulator extends Simulator {
     @Override
     public void reset() {
         // TODO
+        coordinator.reset();
     }
 }

@@ -38,6 +38,16 @@ public class MeshSimulationCoordinator {
         threadPool = null;
     }
 
+    public void reset() {
+        // When resetting, reset all simulation components
+        if (simulationConfig == null)
+            return;
+
+        // Reset all mesh connectors back to their default states
+        for (MeshConnector connector : simulationConfig.getMeshConnectors())
+            connector.reset();
+    }
+
     public synchronized void queueNow(MeshDriverProcessor processor) {
         // Submit the processor to the thread pool
         meshProcessorFutures.add(threadPool.submit(processor));

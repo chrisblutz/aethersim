@@ -1,7 +1,8 @@
-package com.github.chrisblutz.breadboard.ui.toolkit.display.theming;
+package com.github.chrisblutz.breadboard.ui.toolkit;
 
 import com.github.chrisblutz.breadboard.logging.BreadboardLogging;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIColor;
+import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.UIThemeInstance;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -24,14 +25,16 @@ public class UITheme {
     private static final Constructor yamlThemeConstructor;
 
     private static final UIColor DEFAULT_COLOR = UIColor.rgb((byte) 94, (byte) 6, (byte) 97);
-    private static final Font DEFAULT_FONT = new Font("Arial", Font.PLAIN, 12);
+    private static final UIFont DEFAULT_FONT = new UIFont("Arial", UIFont.Style.PLAIN, 12);
+
+    public static Font MY_FONT = null;
 
     // Represents the active theme
     private static UIThemeInstance theme;
 
     // Cached map of properties
     private static final Map<String, UIColor> colorPropertyCache = new HashMap<>();
-    private static final Map<String, Font> fontPropertyCache = new HashMap<>();
+    private static final Map<String, UIFont> fontPropertyCache = new HashMap<>();
 
     static {
         // Configure the YAML type description for the UIThemeInstance class
@@ -168,7 +171,7 @@ public class UITheme {
         return DEFAULT_COLOR;
     }
 
-    public static Font getFont(String key) {
+    public static UIFont getFont(String key) {
         // If the font isn't present in the cache, parse it
         if (!fontPropertyCache.containsKey(key)) {
             // Get the value of the font key from the property mapping.  A null value indicates no
@@ -195,7 +198,7 @@ public class UITheme {
         return fontPropertyCache.get(key);
     }
 
-    private static Font parseFontValue(String fontValue) {
+    private static UIFont parseFontValue(String fontValue) {
         // If the value is null, return the default font
         if (fontValue == null)
             return DEFAULT_FONT;
@@ -219,13 +222,14 @@ public class UITheme {
             return DEFAULT_FONT;
         }
 
-        int fontStyle;
+        UIFont.Style fontStyle;
         switch (fontStyleString.toLowerCase()) {
-            case "plain" -> fontStyle = Font.PLAIN;
-            case "bold" -> fontStyle = Font.BOLD;
-            case "italic" -> fontStyle = Font.ITALIC;
+            case "plain" -> fontStyle = UIFont.Style.PLAIN;
+            case "bold" -> fontStyle = UIFont.Style.BOLD;
+            case "italic" -> fontStyle = UIFont.Style.ITALIC;
+            case "bold_italic" -> fontStyle = UIFont.Style.BOLD_ITALIC;
             default -> {
-                BreadboardLogging.getInterfaceLogger().warn("Font style '{}' must be one of 'plain', 'bold', or 'italic'.", fontStyleString);
+                BreadboardLogging.getInterfaceLogger().warn("Font style '{}' must be one of 'plain', 'bold', 'italic', or 'bold_italic'.", fontStyleString);
                 return DEFAULT_FONT;
             }
         }
@@ -244,7 +248,7 @@ public class UITheme {
         }
 
         // Now that we've validated the components, create the font
-        return new Font(fontFamily, fontStyle, fontSize);
+        return new UIFont(fontFamily, fontStyle, fontSize);
     }
 
     public static void loadTheme(String name) {
@@ -309,11 +313,16 @@ public class UITheme {
             try {
                 // Read all fonts from the file
                 Font[] fonts = Font.createFonts(fontFile);
+                MY_FONT = fonts[0];
                 // Register the fonts with the graphics environment
                 List<String> fontFamilies = new ArrayList<>();
                 for (Font font : fonts) {
                     LOCAL_GRAPHICS_ENVIRONMENT.registerFont(font);
                     fontFamilies.add(font.getFamily());
+
+                    // Register under both the family and the specific name
+                    UIFont.addCustomInternalFont(font.getName(), font);
+                    UIFont.addCustomInternalFont(font.getFamily(), font);
                 }
                 // Log all loaded families
                 if (fontFamilies.size() > 0)

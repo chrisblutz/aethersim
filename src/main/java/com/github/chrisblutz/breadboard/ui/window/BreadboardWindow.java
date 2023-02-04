@@ -4,7 +4,6 @@ import com.github.chrisblutz.breadboard.components.SignalSourceTemplate;
 import com.github.chrisblutz.breadboard.components.TransistorTemplate;
 import com.github.chrisblutz.breadboard.designs.Design;
 import com.github.chrisblutz.breadboard.designs.components.Chip;
-import com.github.chrisblutz.breadboard.designs.components.ChipPin;
 import com.github.chrisblutz.breadboard.designs.components.Pin;
 import com.github.chrisblutz.breadboard.designs.components.Wire;
 import com.github.chrisblutz.breadboard.simulation.workers.WorkerScheduler;
@@ -19,9 +18,7 @@ import com.github.chrisblutz.breadboard.ui.toolkit.builtin.containers.*;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.input.*;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.text.UIText;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.UITheme;
-import com.github.chrisblutz.breadboard.ui.toolkit.layout.Anchor;
-import com.github.chrisblutz.breadboard.ui.toolkit.layout.Padding;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Direction;
 import com.github.chrisblutz.breadboard.utils.Vertex;
@@ -389,15 +386,9 @@ public class BreadboardWindow {
                 pulledS2SC1E, pulledS2SC2E, pulledS2RC1B
         ));
 
-        ChipPin pin1 = new ChipPin(transistorRC1, TransistorTemplate.NPN_EMITTER);
-        ChipPin pin2 = new ChipPin(null, TransistorTemplate.NPN_EMITTER);
-        ChipPin pin3 = new ChipPin(null, TransistorTemplate.NPN_EMITTER);
-        System.out.println(pin1.hashCode() + ", " + pin2.hashCode() + ", " + pin3.hashCode());
-
         Simulation.setSimulator(new MeshSimulator());
         Simulation.start();
         SimulatedDesign simulatedDesign = Simulation.initialize(testDesign);
-        System.out.println("Here!");
 
 //        MeshVertex vertexInR = new MeshVertex();
 //        MeshVertex vertexInS = new MeshVertex();
@@ -524,6 +515,10 @@ public class BreadboardWindow {
         simSettings.setFont(UITheme.getFont(ThemeKeys.Fonts.UI.SPINNER_BUTTON_DEFAULT));
         simSettings.setPadding(simSettings.getPadding()); // TODO set to 8 on X
         toolbar.add(simSettings);
+        UIButton restart = new UIButton("\uE5D5", Simulation::reset);
+        restart.setFont(UITheme.getFont(ThemeKeys.Fonts.UI.SPINNER_BUTTON_DEFAULT));
+        restart.setPadding(simSettings.getPadding()); // TODO set to 8 on X
+        toolbar.add(restart);
         toolbar.addFlexSpace();
         UITextField textField = new UITextField("Search...", (s) -> {});
         textField.setText("Hello!");
@@ -537,7 +532,7 @@ public class BreadboardWindow {
         bottomToolbar.add(text);
 
         UIFloatingContainer floatingContainer = new UIFloatingContainer();
-        floatingContainer.addComponent(new UITextField("Search components...", (s) -> {}), Anchor.TOP_LEFT, new Padding(10));
+        //floatingContainer.addComponent(new UITextField("Search components...", (s) -> {}), Anchor.TOP_LEFT, new Padding(10));
         floatingContainer.setBackgroundComponent(new DesignEditor(testDesign, simulatedDesign));
 
         UIFlexContainer testFlexContainer = new UIFlexContainer(Direction.VERTICAL);

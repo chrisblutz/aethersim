@@ -12,6 +12,10 @@ public class SimulationTickTimer {
     private volatile boolean running;
     private volatile long currentCycleStartTime;
 
+    // Gets set to true by simulation manager to indicate that the reset() method of the simulator
+    // itself should be called
+    private volatile boolean simulationResetFlag = false;
+
     public SimulationTickTimer(long targetCycleDuration) {
         this.targetCycleDuration = targetCycleDuration;
         this.runnable = () -> {
@@ -30,6 +34,13 @@ public class SimulationTickTimer {
                     // Update the current simulator and clear the new one
                     currentSimulator = newSimulator;
                     newSimulator = null;
+                }
+
+                // If the simulation has been marked for reset, reset it before doing anything
+                if (simulationResetFlag) {
+                    simulationResetFlag = false;
+                    if (currentSimulator != null)
+                        currentSimulator.reset();
                 }
 
                 // Set the initial cycle start time for this tick
@@ -74,6 +85,10 @@ public class SimulationTickTimer {
     public void stop() {
         // Tell the running thread to stop and let it die naturally
         running = false;
+    }
+
+    public void setResetFlag(boolean resetFlag) {
+        this.simulationResetFlag = resetFlag;
     }
 
     public void setTargetCycleDuration(long targetCycleDuration) {
