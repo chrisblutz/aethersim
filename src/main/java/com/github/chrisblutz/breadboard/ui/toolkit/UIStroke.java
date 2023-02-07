@@ -31,7 +31,7 @@ public class UIStroke {
     Stroke getInternalStroke(float scale) {
         // Scale up dash pattern
         float[] scaledDashPattern;
-        if (scale == 1d) {
+        if (scale == 1d || dashPattern == null) {
             scaledDashPattern = dashPattern;
         }else {
             scaledDashPattern = new float[dashPattern.length];

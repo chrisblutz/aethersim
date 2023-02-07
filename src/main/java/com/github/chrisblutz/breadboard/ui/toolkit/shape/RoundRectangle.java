@@ -40,8 +40,19 @@ public class RoundRectangle implements Shape {
         return arcHeight;
     }
 
+    @Override
     public boolean contains(double x, double y) {
         // TODO include arcs
         return (x >= x1) && (x <= x2) && (y >= y1) && (y <= y2);
+    }
+
+    @Override
+    public Shape translate(double x, double y) {
+        return null;
+    }
+
+    @Override
+    public Shape scale(double scale) {
+        return null;
     }
 }

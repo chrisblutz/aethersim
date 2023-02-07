@@ -28,10 +28,9 @@ public class ThemeKeys {
         public static class Design {
             public static final String CHIP_BACKGROUND = "DesignChipBackground";
             public static final String CHIP_FOREGROUND = "DesignChipForeground";
-            public static final String PIN_BACKGROUND_ACTIVE = "DesignPinBackgroundActive";
-            public static final String PIN_BACKGROUND_INACTIVE = "DesignPinBackgroundInactive";
-            public static final String PIN_BORDER_ACTIVE = "DesignPinBorderActive";
-            public static final String PIN_BORDER_INACTIVE = "DesignPinBorderInactive";
+            public static final String LOGIC_STATE_HIGH = "DesignLogicStateHigh";
+            public static final String LOGIC_STATE_LOW = "DesignLogicStateLow";
+            public static final String LOGIC_STATE_UNCONNECTED = "DesignLogicStateUnconnected";
         }
     }
 
@@ -42,6 +41,11 @@ public class ThemeKeys {
             public static final String BUTTON_DEFAULT = "UIButtonDefault";
             public static final String START_STOP_BUTTON_DEFAULT = "UIStartStopButtonDefault";
             public static final String SPINNER_BUTTON_DEFAULT = "UISpinnerButtonDefault";
+        }
+
+        public static class Design {
+            public static final String CHIP_BASE = "DesignChipBase";
+            public static final String TOOLTIP = "DesignTooltip";
         }
     }
 }

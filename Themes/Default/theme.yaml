@@ -24,13 +24,15 @@ Colors:
   # These colors are specific to the circuit designer
   DesignChipBackground: hex 1a1a1a
   DesignChipForeground: hex 929292
-  DesignPinBackgroundActive: hex 840808
-  DesignPinBackgroundInactive: hex 140101
-  DesignPinBorderActive: hex 4a0707
-  DesignPinBorderInactive: hex 0a0101
+  DesignLogicStateHigh: hex b30b0b #840808
+  DesignLogicStateLow: hex 260202 #140101
+  DesignLogicStateUnconnected: hex 0d0d0d #4a0707
 Fonts:
   # These fonts are used across the user interface
   UITextDefault: Montserrat plain 15
   UIButtonDefault: Montserrat bold 15
   UIStartStopButtonDefault: Material Icons plain 24
   UISpinnerButtonDefault: Material Icons plain 20
+  # These fonts are specific to the circuit designer
+  DesignChipBase: Montserrat plain 15
+  DesignTooltip: Montserrat bold 15

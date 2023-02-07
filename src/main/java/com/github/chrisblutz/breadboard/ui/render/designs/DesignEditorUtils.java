@@ -2,26 +2,36 @@ package com.github.chrisblutz.breadboard.ui.render.designs;
 
 import com.github.chrisblutz.breadboard.simulationproto.LogicState;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIColor;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
+import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 
 public class DesignEditorUtils {
 
+    private static boolean conflictedState = false;
+
     public static UIColor getColorForLogicState(LogicState state) {
+        // The unconnected state is treated as the "default" catch-all in the switch below
         switch (state) {
             case LOW -> {
-                return UIColor.rgb(255, 0, 0);
+                return UITheme.getColor(ThemeKeys.Colors.Design.LOGIC_STATE_LOW);
             }
             case HIGH -> {
-                return UIColor.rgb(100, 0, 0);
-            }
-            case UNCONNECTED -> {
-                return UIColor.rgb(10, 10, 10);
+                return UITheme.getColor(ThemeKeys.Colors.Design.LOGIC_STATE_HIGH);
             }
             case CONFLICTED -> {
-                return UIColor.rgb(0, 255, 0);
+                if (conflictedState)
+                    return UITheme.getColor(ThemeKeys.Colors.Design.LOGIC_STATE_HIGH);
+                else
+                    return UITheme.getColor(ThemeKeys.Colors.Design.LOGIC_STATE_LOW);
             }
             default -> {
-                return UIColor.rgb(0, 0, 255);
+                return UITheme.getColor(ThemeKeys.Colors.Design.LOGIC_STATE_UNCONNECTED);
             }
         }
+    }
+
+    public static void updateRandomConflictedState() {
+        if (Math.random() > 0.66)
+            conflictedState = !conflictedState;
     }
 }

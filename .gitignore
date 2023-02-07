@@ -1,6 +1,11 @@
+# Gradle-Specific Items
 /.gradle/
-/.idea/
 /build/
 
+# IntelliJ IDEA-Specific Items
+/.idea/
+*.iml
+
+# Project-Specific Items
 /Logs/
 *.bbproj

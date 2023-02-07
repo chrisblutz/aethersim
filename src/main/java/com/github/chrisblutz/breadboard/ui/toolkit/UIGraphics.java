@@ -1,6 +1,7 @@
 package com.github.chrisblutz.breadboard.ui.toolkit;
 
 import com.github.chrisblutz.breadboard.logging.BreadboardLogging;
+import com.github.chrisblutz.breadboard.ui.toolkit.exceptions.UIToolkitException;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.TextAlignment;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Rectangle;
@@ -8,6 +9,8 @@ import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Shape;
 
 import java.awt.*;
+import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 
 public class UIGraphics implements Cloneable {
 
@@ -62,8 +65,8 @@ public class UIGraphics implements Cloneable {
 
     public void scale(double scale) {
         // Set the scale, but also check if the scale has been updated
-        boolean scaleDiffers = currentScale != scale;
-        this.currentScale = scale;
+        boolean scaleDiffers = scale != 1f;
+        this.currentScale *= scale;
 
         // If the scale has changed, update the necessary resources assigned to the graphics object
         if (scaleDiffers) {
@@ -222,6 +225,58 @@ public class UIGraphics implements Cloneable {
         );
     }
 
+    public void drawPolyline(double[] xPoints, double[] yPoints, int nPoints) {
+        drawMultipointShape(false, false, xPoints, yPoints, nPoints);
+    }
+
+    public void drawPolygon(double[] xPoints, double[] yPoints, int nPoints) {
+        drawMultipointShape(true, false, xPoints, yPoints, nPoints);
+    }
+
+    public void fillPolygon(double[] xPoints, double[] yPoints, int nPoints) {
+        drawMultipointShape(true, true, xPoints, yPoints, nPoints);
+    }
+
+    private void drawMultipointShape(boolean polygon, boolean fill, double[] xPoints, double[] yPoints, int nPoints) {
+        // Validate parameter length
+        if (xPoints.length != nPoints || yPoints.length != nPoints)
+            throw new UIToolkitException("Multi-point array length must match specified number of points.");
+
+        // Transform points according to the current graphics transform
+        int[] xPointsTransformed = new int[nPoints];
+        int[] yPointsTransformed = new int[nPoints];
+
+        for  (int index = 0; index < nPoints; index++) {
+            xPointsTransformed[index] = (int) getTransformedX(xPoints[index]);
+            yPointsTransformed[index] = (int) getTransformedY(yPoints[index]);
+        }
+
+        // Pass transformed points to internal graphics object
+        if (polygon)
+            if (fill)
+                internalGraphics.fillPolygon(xPointsTransformed, yPointsTransformed, nPoints);
+            else
+                internalGraphics.drawPolygon(xPointsTransformed, yPointsTransformed, nPoints);
+        else
+            internalGraphics.drawPolyline(xPointsTransformed, yPointsTransformed, nPoints);
+    }
+
+    @Deprecated
+    public void drawPath(Path2D path2D) {
+        // Store scale to reset later
+        double savedScale = currentScale;
+        currentScale = 1f;
+        setScaledStroke();
+        currentScale = savedScale;
+        // Create a copy of the graphics object to do this operation
+        Graphics2D copyGraphics = (Graphics2D) internalGraphics.create();
+        copyGraphics.translate(currentTranslateX, currentTranslateY);
+        copyGraphics.scale(currentScale, currentScale);
+        copyGraphics.draw(path2D);
+        copyGraphics.dispose();
+        setScaledStroke();
+    }
+
     public void drawRect(double x, double y, double width, double height) {
         // Render the shape with the internal graphics object
         internalGraphics.drawRect(
@@ -318,6 +373,7 @@ public class UIGraphics implements Cloneable {
                 actualY += internalFontMetrics.getAscent();
             }
             case CENTER -> {
+                actualY += ((float) (internalFontMetrics.getAscent() - internalFontMetrics.getDescent()) / 2);
             }
             case DESCENT -> {
                 actualY -= internalFontMetrics.getDescent();
@@ -329,7 +385,12 @@ public class UIGraphics implements Cloneable {
         internalGraphics.drawString(string, actualX, actualY);
     }
 
-    //public UIFontMetrics getFontMetrics() {}
+    public Rectangle getStringBounds(String string) {
+        // Get internal font metrics object
+        FontMetrics metrics = internalGraphics.getFontMetrics();
+        Rectangle2D stringBounds = metrics.getStringBounds(string, internalGraphics);
+        return new Rectangle(0, 0, stringBounds.getWidth() / currentScale, stringBounds.getHeight() / currentScale);
+    }
 
     /**
      * This method runs the specified routine using a copy of this graphics
@@ -347,23 +408,25 @@ public class UIGraphics implements Cloneable {
         // the runnable.  After the runnable finishes, dispose of the new
         // graphics object.
         Graphics2D copyGraphics = (Graphics2D) internalGraphics.create();
-        try {
-            // Create a new UIToolkit graphics object with the copy
-            UIGraphics cloneGraphics = (UIGraphics) clone();
-            cloneGraphics.internalGraphics = copyGraphics;
-            // Pass the copy object to the renderer
-            runnable.draw(cloneGraphics);
-        } catch (CloneNotSupportedException e) {
-            // We should never get here, since this class is Cloneable
-            BreadboardLogging.getInterfaceLogger().error("Graphics object could not be cloned.", e);
-        }
+        // Create a new UIToolkit graphics object with the copy
+        UIGraphics cloneGraphics = clone();
+        cloneGraphics.internalGraphics = copyGraphics;
+        // Pass the copy object to the renderer
+        runnable.draw(cloneGraphics);
         // Dispose of the internal copy to free resources
         copyGraphics.dispose();
     }
 
     @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
+    protected UIGraphics clone() {
+        try {
+            // Create a cloned graphics object
+            return (UIGraphics) super.clone();
+        } catch (CloneNotSupportedException e) {
+            // We should never get here, since this class is Cloneable
+            BreadboardLogging.getInterfaceLogger().error("Graphics object could not be cloned.", e);
+            return null;
+        }
     }
 
     private double getTransformedX(double x) {

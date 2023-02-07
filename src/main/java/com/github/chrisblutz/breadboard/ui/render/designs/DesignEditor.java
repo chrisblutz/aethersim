@@ -1,5 +1,6 @@
 package com.github.chrisblutz.breadboard.ui.render.designs;
 
+import com.github.chrisblutz.breadboard.components.TransistorTemplate;
 import com.github.chrisblutz.breadboard.designs.Design;
 import com.github.chrisblutz.breadboard.designs.components.Chip;
 import com.github.chrisblutz.breadboard.designs.components.ChipPin;
@@ -7,15 +8,17 @@ import com.github.chrisblutz.breadboard.designs.components.Pin;
 import com.github.chrisblutz.breadboard.designs.components.Wire;
 import com.github.chrisblutz.breadboard.simulationproto.LogicState;
 import com.github.chrisblutz.breadboard.simulationproto.SimulatedDesign;
-import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.MeshSimulatedDesign;
-import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.MeshVertex;
 import com.github.chrisblutz.breadboard.ui.toolkit.*;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
+import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
+import com.github.chrisblutz.breadboard.ui.toolkit.shape.Rectangle;
+import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
 import com.github.chrisblutz.breadboard.ui.window.BreadboardWindow;
 
 import java.awt.event.KeyEvent;
+import java.awt.geom.RoundRectangle2D;
 
 /**
  * This class is used to render a single design.
@@ -32,7 +35,10 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private int designGridActualWidth, designGridActualHeight;
     private int renderOriginX, renderOriginY;
 
-    private double zoom = 20;
+    private double zoom = 20, translateX = 0, translateY = 0, dragStartTranslateX = 0, dragStartTranslateY = 0;
+    private double gridScaleX = -1, gridScaleY = -1;
+    private int gridMouseX = -1, gridMouseY = -1;
+    private int mouseX = -1, mouseY = -1, mouseDragStartX = -1, mouseDragStartY = -1;
     private DesignRenderer renderer = new DesignRenderer();
     private ChipPin hoveredPin = null;
     private Chip hoveredChip = null;
@@ -47,23 +53,34 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         this.design = design;
         this.simulatedDesign = simulatedDesign;
 
+        renderer.generate(design);
+
         setMinimumSize(new UIDimension(200, 200));
     }
 
     @Override
     public void render(UIGraphics graphics) {
+        // Each tick, update the colors for the "conflicted" wire state so it flickers
+        DesignEditorUtils.updateRandomConflictedState();
+
         // Calculate initial render space parameters
         calculateRenderSpaceParameters();
 
-        // TODO
-        //Graphics2D g = graphics.getInternalGraphics();
-        renderer.generate(design, zoom, 0, 0);
-
-        graphics.withCopy(this::drawGrid);
-
-//        g.scale(zoom, zoom);
-
-        graphics.withCopy(designGraphics -> drawDesign(designGraphics, design));
+        graphics.withCopy(scaledGraphics -> {
+            scaledGraphics.scale(zoom);
+            scaledGraphics.translate(translateX, translateY);
+            graphics.withCopy(uiGraphics -> drawGrid(uiGraphics, scaledGraphics));
+        });
+        graphics.withCopy(scaledGraphics -> {
+            scaledGraphics.scale(zoom);
+            scaledGraphics.translate(translateX, translateY);
+            scaledGraphics.withCopy(designGraphics -> drawDesign(designGraphics, design));
+        });
+        graphics.withCopy(scaledGraphics -> {
+            scaledGraphics.scale(zoom);
+            scaledGraphics.translate(translateX, translateY);
+            graphics.withCopy(uiGraphics -> drawMouseObjects(uiGraphics, scaledGraphics));
+        });
     }
 
     private void calculateRenderSpaceParameters() {
@@ -75,23 +92,20 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         this.renderOriginY = designGridActualHeight < getRenderSpace().getHeight() ? ((getRenderSpace().getHeight() - designGridActualHeight) / 2) : 0; // TODO: mouse drag origin
     }
 
-    private void drawGrid(UIGraphics graphics) {
-        // Store grid divider thickness value, so we can use it without referring to the method multiple times
-        int dividerThickness = rendererParameters.getGridDividerThickness();
-
+    private void drawGrid(UIGraphics uiGraphics, UIGraphics scaledGraphics) {
         // Draw background
-        graphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.BACKGROUND_PRIMARY));
-        graphics.fillRect(0, 0, getRenderSpace().getWidth(), getRenderSpace().getHeight());
+        uiGraphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.BACKGROUND_PRIMARY));
+        uiGraphics.fillRect(0, 0, getRenderSpace().getWidth(), getRenderSpace().getHeight());
 
         // Draw solid border around edges
-        graphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.BORDER_PRIMARY));
-        graphics.setStroke(UIStroke.solid(dividerThickness));
-        graphics.drawRect(renderOriginX, renderOriginY, designGridActualWidth, designGridActualHeight);
+        scaledGraphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.BORDER_PRIMARY));
+        scaledGraphics.setStroke(UIStroke.solid(0.2f));
+        scaledGraphics.drawRect(0, 0, design.getWidth(), design.getHeight());
 
         // Draw dots for the interior grid
         for (int x = 1; x < design.getWidth(); x++) {
             for (int y = 1; y < design.getHeight(); y++) {
-                graphics.fillEllipse(getActualX(x) - ((double) dividerThickness / 2), getActualY(y) - ((double) dividerThickness / 2), dividerThickness, dividerThickness);
+                scaledGraphics.fillEllipse(x - 0.1f, y - 0.1f, 0.2f, 0.2f);
             }
         }
     }
@@ -101,86 +115,163 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         for (Chip chip : design.getChips())
             graphics.withCopy(chipGraphics -> drawChip(chipGraphics, chip));
 
-        // Draw all design pins
+        // Draw all design chip pin backgrounds
+        for (Chip chip : design.getChips())
+            graphics.withCopy(chipGraphics -> drawChipPinBackgrounds(chipGraphics, chip));
+
+        // Draw all design pin backgrounds
         for (Pin pin : design.getPins())
-            graphics.withCopy(pinGraphics -> drawDesignPin(pinGraphics, pin, simulatedDesign != null ? simulatedDesign.getStateForPin(pin) : null));
+            graphics.withCopy(pinGraphics -> drawPinBackground(pinGraphics, pin, simulatedDesign != null ? simulatedDesign.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == null && hoveredPin.pin() == pin));
 
         // Draw all design wires
         for (Wire wire : design.getWires())
             graphics.withCopy(wireGraphics -> drawWire(wireGraphics, wire, simulatedDesign != null ? simulatedDesign.getStateForWire(wire) : null));
+
+        // Draw all design chip pin foregrounds
+        for (Chip chip : design.getChips())
+            graphics.withCopy(chipGraphics -> drawChipPinForegrounds(chipGraphics, chip));
+
+        // Draw all design pin foregrounds
+        for (Pin pin : design.getPins())
+            graphics.withCopy(pinGraphics -> drawPinForeground(pinGraphics, pin, simulatedDesign != null ? simulatedDesign.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == null && hoveredPin.pin() == pin));
     }
 
-    private void drawDesignPin(UIGraphics graphics, Pin pin, LogicState state) {
-        drawPin(graphics, getActualX(pin.getDesignX()), getActualY(pin.getDesignY()), state, null, pin, ((MeshSimulatedDesign) simulatedDesign).getPinMapping().get(pin));
+    private void drawPinBackground(UIGraphics graphics, Pin pin, LogicState state, boolean hovered) {
+        drawPinBackground(graphics, null, pin, state, hovered);
     }
 
-    private void drawChipPin(UIGraphics graphics, Chip chip, Pin pin, LogicState state) {
-        drawPin(graphics, getActualX(chip.getX() + pin.getChipX()), getActualY(chip.getY() + pin.getChipY()), state, chip, pin, ((MeshSimulatedDesign) simulatedDesign).getChipMapping().get(chip).getPinMapping().get(pin));
+    private void drawPinBackground(UIGraphics graphics, Chip chip, Pin pin, LogicState state, boolean hovered) {
+        drawPinBackground(graphics, renderer.getPinShape(new ChipPin(chip, pin)), state, hovered);
     }
 
-    private void drawPin(UIGraphics graphics, int x, int y, LogicState state, Chip chip, Pin pin, MeshVertex vertex) {
-        // Draw the pin itself
-        graphics.setColor( // TODO
-                (state == LogicState.HIGH) ?
-                UITheme.getColor(ThemeKeys.Colors.Design.PIN_BACKGROUND_ACTIVE) :
-                UITheme.getColor(ThemeKeys.Colors.Design.PIN_BACKGROUND_INACTIVE)
-        );
-        if (hoveredPin != null && hoveredPin.chip() == chip && hoveredPin.pin() == pin)
-            graphics.setColor(UIColor.rgb(255, 255, 0));//Color.YELLOW);
-        graphics.fill(renderer.getPinShape(new ChipPin(chip, pin))); // TODO
-
+    private void drawPinBackground(UIGraphics graphics, Ellipse ellipse, LogicState state, boolean hovered) {
         // Draw border around the pin
-        graphics.setColor( // TODO
-                (state == LogicState.HIGH) ?
-                UITheme.getColor(ThemeKeys.Colors.Design.PIN_BORDER_ACTIVE) :
-                UITheme.getColor(ThemeKeys.Colors.Design.PIN_BORDER_INACTIVE)
-        );
-        graphics.setStroke(UIStroke.solid((float) (zoom * 0.2))); // TODO default
-        graphics.draw(renderer.getPinShape(new ChipPin(chip, pin)));
+        graphics.setColor(DesignEditorUtils.getColorForLogicState(state).darker());
+        graphics.setStroke(UIStroke.solid(0.2f)); // TODO default
+        graphics.draw(ellipse);
+    }
 
-//        g.setColor(Color.WHITE);
-//        g.setFont(new Font("Arial", Font.PLAIN, 10));
-//        g.drawString(Integer.toString(vertex.hashCode()), x, y-10);
-//
-//        g.setColor(Color.YELLOW);
-//        g.setFont(new Font("Arial", Font.PLAIN, 10));
-//        g.drawString(Integer.toString(pin.hashCode()), x, y-20);
-//
-//        g.setColor(Color.GREEN);
-//        g.setFont(new Font("Arial", Font.PLAIN, 10));
-//        g.drawString(chip == null ? "NULL" : Integer.toString(chip.hashCode()), x, y-30);
+    private void drawPinForeground(UIGraphics graphics, Pin pin, LogicState state, boolean hovered) {
+        drawPinForeground(graphics, null, pin, state, hovered);
+    }
+
+    private void drawPinForeground(UIGraphics graphics, Chip chip, Pin pin, LogicState state, boolean hovered) {
+        drawPinForeground(graphics, renderer.getPinShape(new ChipPin(chip, pin)), state, hovered);
+    }
+
+    private void drawPinForeground(UIGraphics graphics, Ellipse ellipse, LogicState state, boolean hovered) {
+        // Draw the pin itself
+        graphics.setColor(DesignEditorUtils.getColorForLogicState(state));
+        if (hovered)
+            graphics.setColor(UIColor.rgb(255, 255, 0));
+        graphics.fill(ellipse);
     }
 
     private void drawWire(UIGraphics graphics, Wire wire, LogicState state) {
         // Set the stroke used for the path
-       // graphics.setStroke(new BasicStroke((float) (zoom * 0.3), BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND)); // TODO default, convert
+        graphics.setStroke(UIStroke.solid(0.3f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND)); // TODO default
 
         // Now draw the wire path we calculated above
-        graphics.setColor( // TODO
-                (state == LogicState.HIGH) ?
-                UITheme.getColor(ThemeKeys.Colors.Design.PIN_BACKGROUND_ACTIVE) :
-                UITheme.getColor(ThemeKeys.Colors.Design.PIN_BACKGROUND_INACTIVE)
-        );
-       // graphics.draw(renderer.getWireShape(wire));
+        graphics.setColor(DesignEditorUtils.getColorForLogicState(state));
+        graphics.drawPath(renderer.getWireShape(wire));
     }
 
     private void drawChip(UIGraphics graphics, Chip chip) {
+        drawChip(graphics, chip, simulatedDesign.getSimulatedChipDesign(chip), renderer.getChipShape(chip), hoveredPin == null && hoveredChip == chip);
+    }
+
+    private void drawChip(UIGraphics graphics, Chip chip, SimulatedDesign design, RoundRectangle chipShape, boolean hovered) {
         graphics.setColor(UITheme.getColor(ThemeKeys.Colors.Design.CHIP_BACKGROUND));
-        if (hoveredChip == chip)
+        if (hovered)
             graphics.setColor(UIColor.rgb(255, 255, 0));//Color.YELLOW);
-        graphics.fill(renderer.getChipShape(chip));
+        graphics.fill(chipShape);
 
         graphics.withCopy(chipGraphics -> {
-            chipGraphics.translate(renderer.getChipShape(chip).getX(), renderer.getChipShape(chip).getY()); // TODO
-            chip.getChipTemplate().renderChipPackage(chipGraphics, simulatedDesign.getSimulatedChipDesign(chip), zoom, 0, 0);
+            chipGraphics.translate(chipShape.getX(), chipShape.getY()); // TODO
+            chip.getChipTemplate().renderChipPackage(chipGraphics, design);
         });
+    }
 
+    private void drawChipPinBackgrounds(UIGraphics graphics, Chip chip) {
         // Get the simulated design for this chip
         SimulatedDesign chipDesignInstance = simulatedDesign != null ? simulatedDesign.getSimulatedChipDesign(chip) : null;
 
         // Draw pins for chip
         for (Pin pin : chip.getChipTemplate().getPins())
-            drawChipPin(graphics, chip, pin, chipDesignInstance != null ? chipDesignInstance.getStateForPin(pin) : null);
+            drawPinBackground(graphics, chip, pin, chipDesignInstance != null ? chipDesignInstance.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == chip && hoveredPin.pin() == pin);
+    }
+
+    private void drawChipPinForegrounds(UIGraphics graphics, Chip chip) {
+        // Get the simulated design for this chip
+        SimulatedDesign chipDesignInstance = simulatedDesign != null ? simulatedDesign.getSimulatedChipDesign(chip) : null;
+
+        // Draw pins for chip
+        for (Pin pin : chip.getChipTemplate().getPins())
+            drawPinForeground(graphics, chip, pin, chipDesignInstance != null ? chipDesignInstance.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == chip && hoveredPin.pin() == pin);
+    }
+
+    private void drawMouseObjects(UIGraphics uiGraphics, UIGraphics scaledGraphics) {
+        if (gridMouseX > 0 && gridMouseX < design.getWidth() && gridMouseY > 0 && gridMouseY < design.getHeight()) {
+            scaledGraphics.setColor(UIColor.rgb(0xFFFFFF));
+            scaledGraphics.drawRect(gridMouseX - 0.5, gridMouseY - 0.5, 1, 1);
+        }
+        // If there is a pin hovered, draw its tooltip
+        if (hoveredPin != null) {
+            // Get "actual" non-scaled X/Y coordinates for the pin
+            Ellipse ellipse = renderer.getPinShape(hoveredPin);
+            ellipse = (Ellipse) ellipse.translate(translateX, translateY);
+            ellipse = (Ellipse) ellipse.scale(zoom);
+            float ellipseCenterX = (float) (ellipse.getX() + (ellipse.getWidth() / 2));
+            float ellipseCenterY = (float) (ellipse.getY() + (ellipse.getHeight() / 2));
+
+            // Set font for graphics
+            uiGraphics.setFont(UITheme.getFont(ThemeKeys.Fonts.Design.TOOLTIP)); // TODO
+
+            // Get tooltip text information
+            String tooltipText = hoveredPin.pin().getName().toUpperCase();
+            Rectangle tooltipTextBounds = uiGraphics.getStringBounds(tooltipText);
+            float tooltipSpacing = 4, xPadding = 10, yPadding = 5;
+
+            // Calculate X/Y positions for tooltip
+            float x;
+            float y;
+            int arrowDirection = 0; // 0 - up, 1 - down, 2 - right, 3 - left
+            if (ellipseCenterX - (tooltipTextBounds.getWidth() / 2) - xPadding < 0) {
+                x = (float) (ellipse.getX() + ellipse.getWidth() + tooltipSpacing);
+                y = (float) (ellipseCenterY - (tooltipTextBounds.getHeight() / 2) - yPadding);
+                arrowDirection = 2;
+            } else if (ellipseCenterX + (tooltipTextBounds.getWidth() / 2) + xPadding > getWidth()) {
+                x = (float) (ellipse.getX() - tooltipSpacing - tooltipTextBounds.getWidth() - (xPadding * 2));
+                y = (float) (ellipseCenterY - (tooltipTextBounds.getHeight() / 2) - yPadding);
+                arrowDirection = 3;
+            } else if (ellipse.getY() - tooltipSpacing - tooltipTextBounds.getHeight() - yPadding < 0) {
+                x = (float) (ellipseCenterX - (tooltipTextBounds.getWidth() / 2) - 10);
+                y = (float) (ellipse.getY() + ellipse.getHeight() + tooltipSpacing);
+                arrowDirection = 1;
+            } else {
+                x = (float) (ellipseCenterX - (tooltipTextBounds.getWidth() / 2) - 10);
+                y = (float) (ellipse.getY() - tooltipSpacing - tooltipTextBounds.getHeight() - (yPadding * 2));
+                arrowDirection = 0;
+            }
+
+            uiGraphics.setColor(UIColor.rgba(0, 0, 0, 0.9f));
+            uiGraphics.fillRoundRect(x, y, tooltipTextBounds.getWidth() + (xPadding * 2), tooltipTextBounds.getHeight() + (yPadding * 2), 5, 5); // TODO default
+            uiGraphics.setColor(UIColor.rgb(220, 220, 220));
+            uiGraphics.drawStringCentered(tooltipText, (float) (x + 10 + (tooltipTextBounds.getWidth() / 2)), (float) (y + 5 + (tooltipTextBounds.getHeight() / 2)));
+        }
+
+        if (hoveredPin == null && hoveredChip == null) {
+            Chip chip = new Chip();
+            chip.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
+            int newChipX = gridMouseX - (chip.getChipTemplate().getWidth() / 2);
+            int newChipY = gridMouseY - (chip.getChipTemplate().getHeight() / 2);
+            scaledGraphics.setAlpha(0.8f);
+            drawChip(scaledGraphics, chip, SimulatedDesign.none(), renderer.getNewChipShape(chip, newChipX, newChipY), false);
+            for (Pin pin : chip.getChipTemplate().getPins()) {
+                drawPinBackground(scaledGraphics, renderer.getNewPinShape(chip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
+                drawPinForeground(scaledGraphics, renderer.getNewPinShape(chip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
+            }
+        }
     }
 
     private int getActualX(int gridX) {
@@ -203,6 +294,31 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         return gridDimension * rendererParameters.getGridUnit();
     }
 
+    private void calculateHover() {
+        gridScaleX = (mouseX / zoom) - translateX;
+        gridScaleY = (mouseY / zoom) - translateY;
+        gridMouseX = (int) Math.round(gridScaleX);
+        gridMouseY = (int) Math.round(gridScaleY);
+        hoveredPin = renderer.getHoveredPin(gridScaleX, gridScaleY);
+        hoveredChip = renderer.getHoveredChip(gridScaleX, gridScaleY);
+    }
+
+    private boolean isDesignInsideView() {
+        return (design.getWidth() * zoom) <= getWidth() && (design.getHeight() * zoom) <= getHeight();
+    }
+
+    private void zoom(double newZoom) {
+        double oldZoom = zoom;
+        zoom = newZoom;
+
+        double gridX = (mouseX / oldZoom) - translateX;
+        double gridY = (mouseY / oldZoom) - translateY;
+        translateX = (((translateX + gridX) * oldZoom) / newZoom) - gridX;
+        translateY = (((translateY + gridY) * oldZoom) / newZoom) - gridY;
+
+        calculateHover();
+    }
+
     @Override
     public boolean onMouseClicked(int x, int y, int button) {
         return true;
@@ -210,6 +326,12 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     @Override
     public boolean onMousePressed(int x, int y, int button) {
+        if (button == 2) {
+            mouseDragStartX = x;
+            mouseDragStartY = y;
+            dragStartTranslateX = translateX;
+            dragStartTranslateY = translateY;
+        }
         return true;
     }
 
@@ -240,23 +362,29 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     @Override
     public void onMouseDragged(int x, int y) {
+        mouseX = x;
+        mouseY = y;
+        calculateHover();
+        translateX = dragStartTranslateX + (x - mouseDragStartX) / zoom;
+        translateY = dragStartTranslateY + (y - mouseDragStartY) / zoom;
     }
 
     @Override
     public boolean onMouseMoved(int x, int y) {
-        hoveredPin = renderer.getHoveredPin(x, y);
-        hoveredChip = renderer.getHoveredChip(x, y);
+        mouseX = x;
+        mouseY = y;
+        calculateHover();
         return true;
     }
 
+    double ox = 0, oy =0;
+
     @Override
     public boolean onMouseScrolled(int scrollAmount) {
-        zoom += ((double) scrollAmount / 4);
-        if (zoom < 1)
-            zoom = 1;
-        float gridUnit = rendererParameters.getPreciseGridUnit();
-        rendererParameters.recalculate(gridUnit + (gridUnit * ((float) scrollAmount / 20)));
-
+        double newZoom = zoom * (1 + ((double) -scrollAmount / 25));
+        if (newZoom < 1)
+            newZoom = 1;
+        zoom(newZoom);
         return true;
     }
 

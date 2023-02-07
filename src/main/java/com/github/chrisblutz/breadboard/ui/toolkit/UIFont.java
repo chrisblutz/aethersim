@@ -1,10 +1,12 @@
 package com.github.chrisblutz.breadboard.ui.toolkit;
 
+import com.github.chrisblutz.breadboard.logging.BreadboardLogging;
+
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UIFont {
+public class UIFont implements Cloneable {
 
     public enum Style {
         PLAIN, BOLD, ITALIC, BOLD_ITALIC
@@ -13,13 +15,39 @@ public class UIFont {
     private static final Map<String, Font> CUSTOM_FONT_CACHE = new HashMap<>();
 
     private final String name;
-    private final Style style;
-    private final float size;
+    private Style style;
+    private float size;
 
     public UIFont(String name, Style style, float size) {
         this.name = name;
         this.style = style;
         this.size = size;
+    }
+
+    public UIFont derive(Style style) {
+        // Create a new font by cloning this one then setting the style
+        UIFont newFont = clone();
+        newFont.style = style;
+        return newFont;
+    }
+
+    public UIFont derive(float size) {
+        // Create a new font by cloning this one then setting the size
+        UIFont newFont = clone();
+        newFont.size = size;
+        return newFont;
+    }
+
+    @Override
+    protected UIFont clone() {
+        try {
+            // Create a cloned graphics object
+            return (UIFont) super.clone();
+        } catch (CloneNotSupportedException e) {
+            // We should never get here, since this class is Cloneable
+            BreadboardLogging.getInterfaceLogger().error("Font object could not be cloned.", e);
+            return null;
+        }
     }
 
     @Deprecated

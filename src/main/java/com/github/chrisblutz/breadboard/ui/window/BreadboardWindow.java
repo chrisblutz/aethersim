@@ -280,9 +280,13 @@ public class BreadboardWindow {
         testDesign.setHeight(38);
 
         Pin reset = new Pin();
+        reset.setId("reset");
+        reset.setName("Reset");
         reset.setDesignX(2);
         reset.setDesignY(9);
         Pin set = new Pin();
+        set.setId("set");
+        set.setName("Set");
         set.setDesignX(2);
         set.setDesignY(31);
         testDesign.getPins().addAll(Arrays.asList(reset, set));

@@ -9,7 +9,9 @@ public class UIColor implements Cloneable {
     static final float EPSILON = 0.0001f;
 
     private final Color internalColor;
-    private final int red, green, blue;
+    private final int red;
+    private final int green;
+    private final int blue;
     private float alpha;
 
     private UIColor(int red, int green, int blue, float alpha) {
@@ -36,33 +38,50 @@ public class UIColor implements Cloneable {
         return alpha;
     }
 
+    public UIColor darker() {
+        return derive(0.7f);
+    }
+
+    public UIColor brighter() {
+        return derive(1.3f);
+    }
+
+    public UIColor derive(float luminanceRatio) {
+        return new UIColor(
+                (int) (red * luminanceRatio),
+                (int) (green * luminanceRatio),
+                (int) (blue * luminanceRatio),
+                alpha
+        );
+    }
+
+    public UIColor withAlpha(float alpha) {
+        // If the requested alpha is 1, return this color
+        if (Math.abs(1f - alpha) < EPSILON)
+            return this;
+
+        UIColor cloneColor = clone();
+        // Combine alpha values, so the new alpha is the fractional alpha of the original
+        // For example, an original color with 0.5 alpha that requests a new color with
+        // 0.5 alpha results in a new color with 0.25 alpha
+        cloneColor.alpha *= alpha;
+        return cloneColor;
+    }
+
     @Deprecated
     public Color getInternalColor() {
         return internalColor;
     }
 
-    public UIColor withAlpha(float alpha) {
-        // If the requested alpha is 1, return this color
-        if (Math.abs(1f - alpha) > EPSILON)
-            return this;
-
+    @Override
+    protected UIColor clone() {
         try {
-            UIColor cloneColor = (UIColor) clone();
-            // Combine alpha values, so the new alpha is the fractional alpha of the original
-            // For example, an original color with 0.5 alpha that requests a new color with
-            // 0.5 alpha results in a new color with 0.25 alpha
-            cloneColor.alpha *= alpha;
-            return cloneColor;
+            return (UIColor) super.clone();
         } catch (CloneNotSupportedException e) {
             // We should never get here, since this class is Cloneable
             BreadboardLogging.getInterfaceLogger().error("Color object could not be cloned.", e);
             return null;
         }
-    }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
     }
 
     public static UIColor rgb(int red, int green, int blue) {

@@ -66,16 +66,12 @@ public abstract class ChipTemplate implements BreadboardSavable {
         this.pins = pins;
     }
 
-    public void renderChipPackage(UIGraphics graphics, SimulatedDesign design, double scale, double offsetX, double offsetY) { // TODO Graphics api
+    public void renderChipPackage(UIGraphics graphics, SimulatedDesign design) {
         graphics.setColor(UITheme.getColor(ThemeKeys.Colors.Design.CHIP_FOREGROUND));
-        graphics.setFont(UITheme.getFont(ThemeKeys.Fonts.UI.TEXT_DEFAULT)); // TODO
+        graphics.setFont(UITheme.getFont(ThemeKeys.Fonts.UI.TEXT_DEFAULT).derive(1f)); // TODO
 
         // Draw the chip text in the center of the chip
-        String chipText = getName();
-        FontMetrics metrics = graphics.getInternalGraphics().getFontMetrics();
-        int stringWidth = metrics.stringWidth(chipText);
-        int stringHeightOffset = metrics.getAscent() - metrics.getDescent();
-        graphics.drawString(chipText, (int) ((scale * getWidth() / 2) - ((double) stringWidth / 2) + offsetY), (int) ((scale * getHeight() / 2) + ((double) stringHeightOffset / 2) + offsetY));
+        graphics.drawStringCentered(getName(), (float) getWidth() / 2, (float) getHeight() / 2);
     }
 
     protected abstract Map<String, Object> dumpInternalsToYAML(ProjectOutputWriter writer);

@@ -72,4 +72,14 @@ public class Ellipse implements Shape {
             return false;
         }
     }
+
+    @Override
+    public Shape translate(double x, double y) {
+        return new Ellipse(x1 + x, y1 + y, width, height);
+    }
+
+    @Override
+    public Shape scale(double scale) {
+        return new Ellipse(x1 * scale, y1 * scale, width * scale, height * scale);
+    }
 }

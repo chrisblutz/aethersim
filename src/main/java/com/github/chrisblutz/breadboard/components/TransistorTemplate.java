@@ -10,8 +10,10 @@ import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIStroke;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
+import com.github.chrisblutz.breadboard.ui.toolkit.layout.TextAlignment;
 
 import java.awt.*;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Map;
@@ -51,48 +53,40 @@ public class TransistorTemplate extends ChipTemplate {
     }
 
     @Override
-    public void renderChipPackage(UIGraphics graphics, SimulatedDesign design, double scale, double offsetX, double offsetY) { // TODO Graphics api
-        UIColor wireColor = UITheme.getColor(ThemeKeys.Colors.Design.CHIP_FOREGROUND);
-        UIColor textColor = UITheme.getColor(ThemeKeys.Colors.Design.CHIP_FOREGROUND);
-
+    public void renderChipPackage(UIGraphics graphics, SimulatedDesign design) {
         // Set base color
         UIColor baseColor = DesignEditorUtils.getColorForLogicState(design.getStateForPin(getBase()));
         graphics.setColor(baseColor);
-        graphics.setStroke(UIStroke.dashed(2, UIStroke.Cap.BUTT, UIStroke.Join.ROUND, new float[] {4f, 4f}));
-        graphics.drawLine(0, (int) (3 * scale), (int) (2 * scale), (int) (3 * scale));
-        graphics.drawLine((int) (2 * scale), (int) (3 * scale), (int) (2 * scale), (int) (2 * scale));
+        graphics.setStroke(UIStroke.dashed(0.1f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND, new float[] {0.2f, 0.2f}));
+        graphics.drawPolyline(new double[] {0, 2, 2}, new double[] {3, 3, 2}, 3);
 
         // Set input color
         UIColor inputColor = DesignEditorUtils.getColorForLogicState(design.getStateForPin(getActiveSignalInput()));
         graphics.setColor(inputColor);
-        graphics.setStroke(UIStroke.solid(3, UIStroke.Cap.ROUND, UIStroke.Join.ROUND));
-        graphics.drawLine(0, (int) scale, (int) scale, (int) scale);
-        graphics.drawLine((int) scale, (int) scale, (int) (3 * scale / 2), (int) (2 * scale));
+        graphics.setStroke(UIStroke.solid(0.2f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND));
+        graphics.drawPolyline(new double[] {0, 1, 1.5}, new double[] {1, 1, 2}, 3);
 
         // Set output color
         UIColor outputColor = DesignEditorUtils.getColorForLogicState(design.getStateForPin(getActiveSignalOutput()));
         graphics.setColor(outputColor);
-        graphics.drawLine((int) (5 * scale / 2), (int) (2 * scale), (int) (3 * scale), (int) scale);
-        graphics.drawLine((int) (3 * scale), (int) scale, (int) (4 * scale), (int) scale);
-        graphics.drawLine((int) (4 * scale), (int) scale, (int) (9 * scale / 2), (int) (2 * scale));
-        graphics.drawLine((int) (9 * scale / 2), (int) (2 * scale), (int) (6 * scale), (int) (2 * scale));
+        graphics.drawPolyline(new double[] {2.5, 3, 4, 4.5, 6}, new double[] {2, 1, 1, 2, 2}, 5);
+        graphics.setStroke(UIStroke.solid(0.1f, UIStroke.Cap.BUTT, UIStroke.Join.MITER)); // TODO PNP
+        graphics.fillPolygon(new double[] {3, 3, 2.6}, new double[] {1, 1.5, 1.3}, 3);
+        graphics.drawPolygon(new double[] {3, 3, 2.6}, new double[] {1, 1.5, 1.3}, 3);
+        graphics.setStroke(UIStroke.solid(0.2f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND));
 
         // Set connector color if connected
         if (design.getStateForPin(activeLow ? PNP_BASE : NPN_BASE) == (activeLow ? LogicState.LOW : LogicState.HIGH))
             graphics.setColor(inputColor);
         else
             graphics.setColor(DesignEditorUtils.getColorForLogicState(LogicState.UNCONNECTED));
-        graphics.drawLine((int) scale, (int) (2 * scale), (int) (3 * scale), (int) (2 * scale));
+        graphics.drawLine(1, 2, 3, 2);
 
-        graphics.setColor(textColor);
-        graphics.setFont(UITheme.getFont(ThemeKeys.Fonts.UI.TEXT_DEFAULT)); // TODO
+        graphics.setColor(UITheme.getColor(ThemeKeys.Colors.Design.CHIP_FOREGROUND));
+        graphics.setFont(UITheme.getFont(ThemeKeys.Fonts.UI.TEXT_DEFAULT).derive(1f)); // TODO
 
-        // Draw the chip text in the center of the chip
-        String chipText = getName();
-        FontMetrics metrics = graphics.getInternalGraphics().getFontMetrics();
-        Rectangle2D stringBounds = metrics.getStringBounds(chipText, graphics.getInternalGraphics());
-        int stringHeightOffset = metrics.getAscent() - metrics.getDescent();
-        graphics.drawString(chipText, (int) ((scale * getWidth()) - stringBounds.getWidth() + offsetX - (scale / 2)), (int) ((scale * getHeight()) + offsetY - (scale / 2))); // TODO
+        // Draw the chip text in the lower right of the chip
+        graphics.drawString(getName(), getWidth() - 0.5f, getHeight() - 0.5f, TextAlignment.Horizontal.RIGHT, TextAlignment.Vertical.BASELINE);
     }
 
     @Override
