@@ -10,18 +10,13 @@ import java.util.*;
 
 public class Design implements BreadboardSavable {
 
-    private record DesignPin(Chip chip, Pin pin) {}
-
     private int width;
     public int height;
 
     private final List<Pin> pins = new ArrayList<>();
     private final List<Chip> chips = new ArrayList<>();
     private final List<Wire> wires = new ArrayList<>();
-    private final List<WireProto> wireProtos = new ArrayList<>();
-
-    private final Map<DesignPin, Set<Wire>> pinWireConnections = new HashMap<>();
-    private final Map<ChipPin, Set<WireProto>> pinWireProtoConnections = new HashMap<>();
+    private final Map<ChipPin, Set<Wire>> pinWireConnections = new HashMap<>();
 
     private int transistorCount = 0;
 
@@ -95,82 +90,38 @@ public class Design implements BreadboardSavable {
         return wires;
     }
 
-    public List<WireProto> getWireProtos() {
-        return wireProtos;
-    }
-
     public void addWire(Wire wire) {
         wires.add(wire);
 
         // Update pin connections
-        DesignPin startPin = new DesignPin(wire.getStartChip(), wire.getStartPin());
-        if (!pinWireConnections.containsKey(startPin))
-            pinWireConnections.put(startPin, new HashSet<>());
-        pinWireConnections.get(startPin).add(wire);
-
-        DesignPin endPin = new DesignPin(wire.getEndChip(), wire.getEndPin());
-        if (!pinWireConnections.containsKey(endPin))
-            pinWireConnections.put(endPin, new HashSet<>());
-        pinWireConnections.get(endPin).add(wire);
-    }
-
-    public void addWire(WireProto wire) {
-        wireProtos.add(wire);
-
-        // Update pin connections
         for (ChipPin pin : wire.getConnectedPins()) {
-            if (!pinWireProtoConnections.containsKey(pin))
-                pinWireProtoConnections.put(pin, new LinkedHashSet<>());
-            pinWireProtoConnections.get(pin).add(wire);
+            if (!pinWireConnections.containsKey(pin))
+                pinWireConnections.put(pin, new LinkedHashSet<>());
+            pinWireConnections.get(pin).add(wire);
         }
     }
 
-    public void addWires(Collection<Wire> wires) {
+    public void addWires(Wire... wires) {
         for (Wire wire : wires)
-            addWire(wire);
-    }
-
-    public void addWires(WireProto... wires) {
-        for (WireProto wire : wires)
             addWire(wire);
     }
 
     public void removeWire(Wire wire) {
         wires.remove(wire);
 
-        // Update pin connections
-        DesignPin startPin = new DesignPin(wire.getStartChip(), wire.getStartPin());
-        pinWireConnections.get(startPin).remove(wire);
-
-        DesignPin endPin = new DesignPin(wire.getEndChip(), wire.getEndPin());
-        pinWireConnections.get(endPin).remove(wire);
-    }
-
-    public void removeWire(WireProto wire) {
-        wireProtos.remove(wire);
-
         // Remove wire from pin connections
         for (ChipPin pin : wire.getConnectedPins())
-            if (pinWireProtoConnections.containsKey(pin))
-                pinWireProtoConnections.get(pin).remove(wire);
+            if (pinWireConnections.containsKey(pin))
+                pinWireConnections.get(pin).remove(wire);
     }
 
-    public void removeWires(Collection<Wire> wires) {
+    public void removeWires(Wire... wires) {
         for (Wire wire : wires)
             removeWire(wire);
     }
 
-    public void removeWires(WireProto... wires) {
-        for (WireProto wire : wires)
-            removeWire(wire);
-    }
-
-    public Set<Wire> getWiresConnectedToPin(Chip chip, Pin pin) {
-        return pinWireConnections.getOrDefault(new DesignPin(chip, pin), new HashSet<>());
-    }
-
-    public Set<WireProto> getWireProtosConnectedToPin(ChipPin pin) {
-        return pinWireProtoConnections.getOrDefault(pin, new HashSet<>());
+    public Set<Wire> getWiresConnectedToPin(ChipPin pin) {
+        return pinWireConnections.getOrDefault(pin, new HashSet<>());
     }
 
     @Override
@@ -201,8 +152,8 @@ public class Design implements BreadboardSavable {
 
         // Construct wire array and set the mapping
         List<Map<String, Object>> wireYamlMapping = new ArrayList<>();
-        for (Wire wire : wires)
-            wireYamlMapping.add(wire.dumpToYAML(writer));
+//        for (Wire wire : wires)
+//            wireYamlMapping.add(wire.dumpToYAML(writer));
         yamlMapping.put("Wires", wireYamlMapping);
 
         return yamlMapping;

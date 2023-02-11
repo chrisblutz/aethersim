@@ -1,70 +1,45 @@
 package com.github.chrisblutz.breadboard.designs;
 
+import com.github.chrisblutz.breadboard.designs.wires.WireNode;
+import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
-import com.github.chrisblutz.breadboard.designs.wires.WireVertex;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class Wire implements BreadboardSavable {
 
-    private Pin startPin = null, endPin = null;
-    private Chip startChip = null, endChip = null; // "null" indicates an internal node (i.e. a design input/output)
+    private final Set<WireNode> nodes = new LinkedHashSet<>();
+    private final Set<ChipPin> connectedPins = new LinkedHashSet<>();
+    private final Set<WireSegment> segments = new LinkedHashSet<>();
 
-    private WireVertex[] vertices;
-
-    public void setStartPin(Pin startPin) {
-        setStartPin(null, startPin);
+    public Set<WireNode> getNodes() {
+        return nodes;
     }
 
-    public void setStartPin(Chip startChip, Pin startPin) {
-        this.startChip = startChip;
-        this.startPin = startPin;
+    public Set<ChipPin> getConnectedPins() {
+        return connectedPins;
     }
 
-    public void setEndPin(Pin endPin) {
-        setEndPin(null, endPin);
+    public Set<WireSegment> getSegments() {
+        return segments;
     }
 
-    public void setEndPin(Chip endChip, Pin endPin) {
-        this.endChip = endChip;
-        this.endPin = endPin;
+    public void addSegment(WireSegment segment) {
+        segments.add(segment);
+        // "Connect" this segment to it's nodes
+        for (WireNode node : segment.getEndpointNodes())
+            node.connect(segment);
+        // If any pins are connected to this segment, track them
+        connectedPins.addAll(segment.getEndpointPins());
     }
 
-    public Pin getStartPin() {
-        return startPin;
-    }
-
-    public Pin getEndPin() {
-        return endPin;
-    }
-
-    public Chip getStartChip() {
-        return startChip;
-    }
-
-    public Chip getEndChip() {
-        return endChip;
-    }
-
-    public WireVertex[] getVertices() {
-        return vertices;
-    }
-
-    public void setVertices(WireVertex[] vertices) {
-        this.vertices = vertices;
-    }
-
-    public Set<Pin> getConnectedPins() {
-        if (startPin != null && endPin != null)
-            return Set.of(startPin, endPin);
-        else if (startPin != null)
-            return Set.of(startPin);
-        else if (endPin != null)
-            return Set.of(endPin);
-        else
-            return Set.of();
+    public void addSegments(WireSegment... segments) {
+        // Add each segment individually
+        for (WireSegment segment : segments)
+            addSegment(segment);
     }
 
     @Override

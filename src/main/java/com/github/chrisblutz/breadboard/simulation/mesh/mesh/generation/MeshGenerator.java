@@ -70,11 +70,11 @@ public class MeshGenerator {
             return simulatedDesign;
         }
 
-        // For all wires in the design, identify the mesh vertex it's attached to using the start pin (since they are
-        // connected, both pins should have the same vertex).
+        // For all wires in the design, identify the mesh vertex it's attached to using a random pin (since they are
+        // connected, all pins should have the same vertex).
         for (Wire wire : design.getWires()) {
-            ChipPin startPin = new ChipPin(wire.getStartChip(), wire.getStartPin());
-            simulatedDesign.getWireMapping().put(wire, pinVertices.get(startPin));
+            ChipPin pin = wire.getConnectedPins().iterator().next();
+            simulatedDesign.getWireMapping().put(wire, pinVertices.get(pin));
         }
 
         // For all pins within this chip, build simulation designs for those and add them to this one

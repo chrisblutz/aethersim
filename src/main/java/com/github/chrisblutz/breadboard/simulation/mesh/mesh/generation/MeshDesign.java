@@ -43,17 +43,12 @@ public class MeshDesign {
 
         // For each wire in this design, add it to the set of connections for the pins it connects to
         for (Wire wire : design.getWires()) {
-            // Create mesh pins for the ends of the wire
-            ChipPin startPin = new ChipPin(wire.getStartChip(), wire.getStartPin());
-            ChipPin endPin = new ChipPin(wire.getEndChip(), wire.getEndPin());
-
             // For the pins, add this wire to the connection sets
-            if (!wireConnections.containsKey(startPin))
-                wireConnections.put(startPin, new LinkedHashSet<>());
-            wireConnections.get(startPin).add(wire);
-            if (!wireConnections.containsKey(endPin))
-                wireConnections.put(endPin, new LinkedHashSet<>());
-            wireConnections.get(endPin).add(wire);
+            for (ChipPin pin : wire.getConnectedPins()) {
+                if (!wireConnections.containsKey(pin))
+                    wireConnections.put(pin, new LinkedHashSet<>());
+                wireConnections.get(pin).add(wire);
+            }
         }
 
         // For all inner chips in this design, recursively call this method
@@ -87,18 +82,12 @@ public class MeshDesign {
         // Get all the wires that this pin connects to, and iterate through them.  If the pin we arrive
         // at is not already in the set, add it and continue recursively.
         for (Wire wire : getConnections(origin)) {
-            ChipPin startPin = new ChipPin(wire.getStartChip(), wire.getStartPin());
-            if (!uniqueSet.contains(startPin))  {
-                uniqueSet.add(startPin);
-                remainingSet.remove(startPin);
-                generateUniqueSetFromPin(remainingSet, uniqueSet, startPin);
-            }
-
-            ChipPin endPin = new ChipPin(wire.getEndChip(), wire.getEndPin());
-            if (!uniqueSet.contains(endPin))  {
-                uniqueSet.add(endPin);
-                remainingSet.remove(endPin);
-                generateUniqueSetFromPin(remainingSet, uniqueSet, endPin);
+            for (ChipPin pin : wire.getConnectedPins()) {
+                if (!uniqueSet.contains(pin)) {
+                    uniqueSet.add(pin);
+                    remainingSet.remove(pin);
+                    generateUniqueSetFromPin(remainingSet, uniqueSet, pin);
+                }
             }
         }
     }

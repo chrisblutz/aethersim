@@ -2,7 +2,6 @@ package com.github.chrisblutz.breadboard.ui.render.designs;
 
 import com.github.chrisblutz.breadboard.designs.*;
 import com.github.chrisblutz.breadboard.designs.templates.ToggleTemplate;
-import com.github.chrisblutz.breadboard.designs.templates.TransistorTemplate;
 import com.github.chrisblutz.breadboard.designs.wires.WireNode;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.simulation.LogicState;
@@ -122,12 +121,8 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             graphics.withCopy(pinGraphics -> drawPinBackground(pinGraphics, pin, simulatedDesign != null ? simulatedDesign.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == null && hoveredPin.pin() == pin));
 
         // Draw all design wires
-//        for (Wire wire : design.getWires())
-//            graphics.withCopy(wireGraphics -> drawWire(wireGraphics, wire, simulatedDesign != null ? simulatedDesign.getStateForWire(wire) : null));
-
-        // Draw all design wires
-        for (WireProto wire : design.getWireProtos())
-            graphics.withCopy(wireGraphics -> drawWire(wireGraphics, wire, LogicState.LOW));
+        for (Wire wire : design.getWires())
+            graphics.withCopy(wireGraphics -> drawWire(wireGraphics, wire, simulatedDesign != null ? simulatedDesign.getStateForWire(wire) : null));
 
         // Draw all design chip pin foregrounds
         for (Chip chip : design.getChips())
@@ -170,15 +165,6 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     }
 
     private void drawWire(UIGraphics graphics, Wire wire, LogicState state) {
-        // Set the stroke used for the path
-        graphics.setStroke(UIStroke.solid(0.3f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND)); // TODO default
-
-        // Now draw the wire path we calculated above
-        graphics.setColor(DesignEditorUtils.getColorForLogicState(state));
-        graphics.drawPath(renderer.getWireShape(wire));
-    }
-
-    private void drawWire(UIGraphics graphics, WireProto wire, LogicState state) {
         // Set the stroke and color used for the paths and nodes
         graphics.setStroke(UIStroke.solid(0.3f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND)); // TODO default
         graphics.setColor(DesignEditorUtils.getColorForLogicState(state));
