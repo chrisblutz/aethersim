@@ -1,10 +1,8 @@
 package com.github.chrisblutz.breadboard.designs;
 
-import com.github.chrisblutz.breadboard.components.DesignedChipTemplate;
-import com.github.chrisblutz.breadboard.components.TransistorTemplate;
-import com.github.chrisblutz.breadboard.designs.components.Chip;
-import com.github.chrisblutz.breadboard.designs.components.Pin;
-import com.github.chrisblutz.breadboard.designs.components.Wire;
+import com.github.chrisblutz.breadboard.designs.templates.DesignedTemplate;
+import com.github.chrisblutz.breadboard.designs.templates.SimulatedTemplate;
+import com.github.chrisblutz.breadboard.designs.templates.TransistorTemplate;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 
@@ -56,10 +54,14 @@ public class Design implements BreadboardSavable {
     public void addChip(Chip chip) {
         chips.add(chip);
 
+        // If the chip has a simulated template, initialize the chip within the template
+        if (chip.getChipTemplate() instanceof SimulatedTemplate<?> chipTemplate)
+            chipTemplate.initialize(chip);
+
         // Update transistor count
         if (chip.getChipTemplate() instanceof TransistorTemplate)
             transistorCount++;
-        else if (chip.getChipTemplate() instanceof DesignedChipTemplate designedTemplate)
+        else if (chip.getChipTemplate() instanceof DesignedTemplate designedTemplate)
             transistorCount += designedTemplate.getDesign().getTransistorCount();
     }
 
@@ -71,10 +73,14 @@ public class Design implements BreadboardSavable {
     public void removeChip(Chip chip) {
         chips.remove(chip);
 
+        // If the chip had a simulated template, dispose of the chip within the template
+        if (chip.getChipTemplate() instanceof SimulatedTemplate<?> chipTemplate)
+            chipTemplate.dispose(chip);
+
         // Update transistor count
         if (chip.getChipTemplate() instanceof TransistorTemplate)
             transistorCount--;
-        else if (chip.getChipTemplate() instanceof DesignedChipTemplate designedTemplate)
+        else if (chip.getChipTemplate() instanceof DesignedTemplate designedTemplate)
             transistorCount -= designedTemplate.getDesign().getTransistorCount();
     }
 

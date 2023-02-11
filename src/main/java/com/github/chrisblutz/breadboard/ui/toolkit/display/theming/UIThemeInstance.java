@@ -1,6 +1,5 @@
 package com.github.chrisblutz.breadboard.ui.toolkit.display.theming;
 
-import java.util.Arrays;
 import java.util.Map;
 
 public class UIThemeInstance {

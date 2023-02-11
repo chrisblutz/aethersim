@@ -1,17 +1,7 @@
 package com.github.chrisblutz.breadboard;
 
 import com.github.chrisblutz.breadboard.logging.BreadboardLogging;
-import com.github.chrisblutz.breadboard.simulationproto.LogicState;
-import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.MeshConnector;
-import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.MeshDriver;
-import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.MeshEdge;
-import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.MeshVertex;
-import com.github.chrisblutz.breadboard.simulationproto.standard.threading.MeshSimulationCoordinator;
 import com.github.chrisblutz.breadboard.ui.BreadboardUI;
-import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
-
-import java.awt.image.BufferedImage;
-import java.util.Set;
 
 public class Breadboard {
     public static void main(String[] args) {

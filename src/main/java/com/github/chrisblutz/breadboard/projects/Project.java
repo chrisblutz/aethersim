@@ -1,7 +1,7 @@
 package com.github.chrisblutz.breadboard.projects;
 
-import com.github.chrisblutz.breadboard.components.ChipTemplate;
 import com.github.chrisblutz.breadboard.designs.Design;
+import com.github.chrisblutz.breadboard.designs.templates.ChipTemplate;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 

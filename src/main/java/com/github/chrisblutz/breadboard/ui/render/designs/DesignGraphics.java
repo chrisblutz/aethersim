@@ -1,9 +1,8 @@
 package com.github.chrisblutz.breadboard.ui.render.designs;
 
-import com.github.chrisblutz.breadboard.designs.Design;
-import com.github.chrisblutz.breadboard.designs.components.Chip;
-import com.github.chrisblutz.breadboard.simulationproto.LogicState;
-import com.github.chrisblutz.breadboard.simulationproto.SimulatedDesign;
+import com.github.chrisblutz.breadboard.designs.Chip;
+import com.github.chrisblutz.breadboard.simulation.LogicState;
+import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
 
 import java.awt.*;
 

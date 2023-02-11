@@ -1,7 +1,5 @@
 package com.github.chrisblutz.breadboard.ui.toolkit.shape;
 
-import com.github.chrisblutz.breadboard.ui.toolkit.layout.Padding;
-
 public class Ellipse implements Shape {
 
     private final double x1, x2, y1, y2, focusX1, focusY1, focusX2, focusY2;

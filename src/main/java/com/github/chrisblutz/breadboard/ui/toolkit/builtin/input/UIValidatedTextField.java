@@ -1,7 +1,6 @@
 package com.github.chrisblutz.breadboard.ui.toolkit.builtin.input;
 
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.listeners.OnChangeListener;
-import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
 public class UIValidatedTextField extends UITextField {
 

@@ -3,7 +3,6 @@ package com.github.chrisblutz.breadboard.ui.toolkit.builtin.input;
 import com.github.chrisblutz.breadboard.ui.toolkit.*;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.listeners.OnChangeListener;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Padding;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
@@ -11,8 +10,8 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class UITextField extends UIComponent implements UIInteractable, UIFocusable {
 

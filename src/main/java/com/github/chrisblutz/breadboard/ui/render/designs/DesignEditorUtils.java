@@ -1,6 +1,6 @@
 package com.github.chrisblutz.breadboard.ui.render.designs;
 
-import com.github.chrisblutz.breadboard.simulationproto.LogicState;
+import com.github.chrisblutz.breadboard.simulation.LogicState;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIColor;
 import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;

@@ -2,9 +2,9 @@ package com.github.chrisblutz.breadboard.ui.toolkit.builtin.input;
 
 import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIStroke;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.listeners.OnClickListener;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
 import java.awt.*;

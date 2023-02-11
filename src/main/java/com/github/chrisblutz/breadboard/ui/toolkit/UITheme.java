@@ -1,7 +1,6 @@
 package com.github.chrisblutz.breadboard.ui.toolkit;
 
 import com.github.chrisblutz.breadboard.logging.BreadboardLogging;
-import com.github.chrisblutz.breadboard.ui.toolkit.UIColor;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.UIThemeInstance;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
@@ -12,11 +11,8 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class UITheme {
 

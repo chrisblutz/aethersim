@@ -1,8 +1,8 @@
 package com.github.chrisblutz.breadboard.ui.toolkit;
 
+import com.github.chrisblutz.breadboard.ui.render.RenderSpace;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.helpers.GraphicsContext;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
-import com.github.chrisblutz.breadboard.ui.render.RenderSpace;
 
 
 public abstract class UIComponent implements UIParentable {

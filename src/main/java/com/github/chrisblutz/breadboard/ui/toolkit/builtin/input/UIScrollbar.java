@@ -1,10 +1,11 @@
 package com.github.chrisblutz.breadboard.ui.toolkit.builtin.input;
 
-import com.github.chrisblutz.breadboard.ui.toolkit.*;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIColor;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIComponent;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
+import com.github.chrisblutz.breadboard.ui.toolkit.UIInteractable;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Direction;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
-
-import java.awt.event.KeyEvent;
 
 public class UIScrollbar extends UIComponent implements UIInteractable {
 

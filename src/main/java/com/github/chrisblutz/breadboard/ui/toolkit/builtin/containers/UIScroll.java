@@ -7,7 +7,6 @@ import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class UIScroll extends UIContainer implements UIInteractable, UIFocusable {

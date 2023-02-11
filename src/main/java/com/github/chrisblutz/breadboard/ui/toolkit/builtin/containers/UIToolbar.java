@@ -2,10 +2,10 @@ package com.github.chrisblutz.breadboard.ui.toolkit.builtin.containers;
 
 import com.github.chrisblutz.breadboard.ui.toolkit.UIComponent;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.spacing.UISeparator;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.spacing.UISpacer;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Direction;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Padding;
 

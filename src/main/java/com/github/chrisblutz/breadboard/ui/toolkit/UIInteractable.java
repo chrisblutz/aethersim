@@ -1,7 +1,5 @@
 package com.github.chrisblutz.breadboard.ui.toolkit;
 
-import java.awt.event.KeyEvent;
-
 public interface UIInteractable {
 
     boolean onMouseClicked(int x, int y, int button);

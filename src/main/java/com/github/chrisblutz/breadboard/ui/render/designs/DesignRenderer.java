@@ -1,20 +1,11 @@
 package com.github.chrisblutz.breadboard.ui.render.designs;
 
-import com.github.chrisblutz.breadboard.designs.Design;
-import com.github.chrisblutz.breadboard.designs.components.Chip;
-import com.github.chrisblutz.breadboard.designs.components.ChipPin;
-import com.github.chrisblutz.breadboard.designs.components.Pin;
-import com.github.chrisblutz.breadboard.designs.components.Wire;
+import com.github.chrisblutz.breadboard.designs.*;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
-import com.github.chrisblutz.breadboard.ui.toolkit.shape.Rectangle;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
 import com.github.chrisblutz.breadboard.utils.Vertex;
 
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

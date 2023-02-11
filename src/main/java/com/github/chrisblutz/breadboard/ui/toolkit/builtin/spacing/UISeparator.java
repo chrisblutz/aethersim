@@ -2,10 +2,10 @@ package com.github.chrisblutz.breadboard.ui.toolkit.builtin.spacing;
 
 import com.github.chrisblutz.breadboard.ui.toolkit.UIComponent;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
-import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
-import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
+import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Direction;
+import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
 public class UISeparator extends UIComponent {
 

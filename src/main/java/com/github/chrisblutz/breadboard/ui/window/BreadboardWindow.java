@@ -1,26 +1,28 @@
 package com.github.chrisblutz.breadboard.ui.window;
 
-import com.github.chrisblutz.breadboard.components.SignalSourceTemplate;
-import com.github.chrisblutz.breadboard.components.TransistorTemplate;
+import com.github.chrisblutz.breadboard.designs.Chip;
 import com.github.chrisblutz.breadboard.designs.Design;
-import com.github.chrisblutz.breadboard.designs.components.Chip;
-import com.github.chrisblutz.breadboard.designs.components.Pin;
-import com.github.chrisblutz.breadboard.designs.components.Wire;
-import com.github.chrisblutz.breadboard.simulation.workers.WorkerScheduler;
-import com.github.chrisblutz.breadboard.simulationproto.SimulatedDesign;
-import com.github.chrisblutz.breadboard.simulationproto.Simulation;
-import com.github.chrisblutz.breadboard.simulationproto.standard.MeshSimulator;
-import com.github.chrisblutz.breadboard.simulationproto.standard.mesh.*;
-import com.github.chrisblutz.breadboard.simulationproto.standard.threading.MeshSimulationCoordinator;
+import com.github.chrisblutz.breadboard.designs.Wire;
+import com.github.chrisblutz.breadboard.designs.templates.ConstantTemplate;
+import com.github.chrisblutz.breadboard.designs.templates.ToggleTemplate;
+import com.github.chrisblutz.breadboard.designs.templates.TransistorTemplate;
+import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
+import com.github.chrisblutz.breadboard.simulation.Simulation;
+import com.github.chrisblutz.breadboard.simulation.mesh.MeshSimulator;
+import com.github.chrisblutz.breadboard.simulation.mesh.mesh.MeshSimulatedDesign;
+import com.github.chrisblutz.breadboard.simulation.mesh.threading.MeshSimulationCoordinator;
 import com.github.chrisblutz.breadboard.ui.render.designs.DesignEditor;
+import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIWindow;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.containers.*;
-import com.github.chrisblutz.breadboard.ui.toolkit.builtin.input.*;
+import com.github.chrisblutz.breadboard.ui.toolkit.builtin.input.UIButton;
+import com.github.chrisblutz.breadboard.ui.toolkit.builtin.input.UISpinner;
+import com.github.chrisblutz.breadboard.ui.toolkit.builtin.input.UIStartStopButton;
+import com.github.chrisblutz.breadboard.ui.toolkit.builtin.input.UITextField;
 import com.github.chrisblutz.breadboard.ui.toolkit.builtin.text.UIText;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
-import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Direction;
+import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 import com.github.chrisblutz.breadboard.utils.Vertex;
 
 import javax.swing.*;
@@ -34,7 +36,6 @@ public class BreadboardWindow {
     // TODO
     public static MeshSimulationCoordinator coordinator;
     public static MeshSimulatedDesign simulatedDesign;
-    public static MeshDriver resetDriver, setDriver;
 
     public static void initializeWindow() {
 
@@ -276,20 +277,8 @@ public class BreadboardWindow {
 //        DesignInstance nand2DesignInstance = designInstance.getDesignInstanceForChip(testNand2);
 
         Design testDesign = new Design();
-        testDesign.setWidth(20);
+        testDesign.setWidth(28);
         testDesign.setHeight(38);
-
-        Pin reset = new Pin();
-        reset.setId("reset");
-        reset.setName("Reset");
-        reset.setDesignX(2);
-        reset.setDesignY(9);
-        Pin set = new Pin();
-        set.setId("set");
-        set.setName("Set");
-        set.setDesignX(2);
-        set.setDesignY(31);
-        testDesign.getPins().addAll(Arrays.asList(reset, set));
 
         Chip transistorRC2 = new Chip();
         transistorRC2.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
@@ -310,84 +299,110 @@ public class BreadboardWindow {
         transistorSC2.setY(28);
 
         Chip signalDriverR1 = new Chip();
-        signalDriverR1.setChipTemplate(SignalSourceTemplate.getDrivenLowTemplate());
+        signalDriverR1.setChipTemplate(ConstantTemplate.getDrivenLowTemplate());
         signalDriverR1.setX(2);
         signalDriverR1.setY(2);
         Chip signalDriverS1 = new Chip();
-        signalDriverS1.setChipTemplate(SignalSourceTemplate.getDrivenLowTemplate());
+        signalDriverS1.setChipTemplate(ConstantTemplate.getDrivenLowTemplate());
         signalDriverS1.setX(2);
         signalDriverS1.setY(34);
 
         Chip pulledR2 = new Chip();
-        pulledR2.setChipTemplate(SignalSourceTemplate.getPulledHighTemplate());
+        pulledR2.setChipTemplate(ConstantTemplate.getPulledHighTemplate());
         pulledR2.setX(12);
         pulledR2.setY(2);
         Chip pulledS2 = new Chip();
-        pulledS2.setChipTemplate(SignalSourceTemplate.getPulledHighTemplate());
+        pulledS2.setChipTemplate(ConstantTemplate.getPulledHighTemplate());
         pulledS2.setX(12);
         pulledS2.setY(34);
 
+        Chip toggleReset = new Chip();
+        toggleReset.setChipTemplate(ToggleTemplate.getTemplate());
+        toggleReset.setX(2);
+        toggleReset.setY(7);
+        Chip toggleSet = new Chip();
+        toggleSet.setChipTemplate(ToggleTemplate.getTemplate());
+        toggleSet.setX(2);
+        toggleSet.setY(29);
+
+        Chip toggleTest1 = new Chip();
+        toggleTest1.setChipTemplate(ToggleTemplate.getTemplate());
+        toggleTest1.setX(20);
+        toggleTest1.setY(13);
+        Chip toggleTest2 = new Chip();
+        toggleTest2.setChipTemplate(ToggleTemplate.getTemplate());
+        toggleTest2.setX(20);
+        toggleTest2.setY(23);
+
         Wire resetRC1B = new Wire();
-        resetRC1B.setStartPin(reset);
+        resetRC1B.setStartPin(toggleReset, ToggleTemplate.OUTPUT);
         resetRC1B.setEndPin(transistorRC2, TransistorTemplate.NPN_BASE);
-        resetRC1B.setVertices(new Vertex[] {new Vertex(2, 9), new Vertex(10, 9)});
+        resetRC1B.setVertices(new Vertex[] {new Vertex(6, 9), new Vertex(10, 9)});
         Wire setSC1B = new Wire();
-        setSC1B.setStartPin(set);
+        setSC1B.setStartPin(toggleSet, ToggleTemplate.OUTPUT);
         setSC1B.setEndPin(transistorSC2, TransistorTemplate.NPN_BASE);
-        setSC1B.setVertices(new Vertex[] {new Vertex(2, 31), new Vertex(10, 31)});
+        setSC1B.setVertices(new Vertex[] {new Vertex(6, 31), new Vertex(10, 31)});
 
         Wire driverR1RC2C = new Wire();
-        driverR1RC2C.setStartPin(signalDriverR1, SignalSourceTemplate.OUTPUT);
+        driverR1RC2C.setStartPin(signalDriverR1, ConstantTemplate.OUTPUT);
         driverR1RC2C.setEndPin(transistorRC2, TransistorTemplate.NPN_COLLECTOR);
         driverR1RC2C.setVertices(new Vertex[] {new Vertex(6, 3), new Vertex(8, 3), new Vertex(8, 7), new Vertex(10, 7)});
         Wire driverR1RC1C = new Wire();
-        driverR1RC1C.setStartPin(signalDriverR1, SignalSourceTemplate.OUTPUT);
+        driverR1RC1C.setStartPin(signalDriverR1, ConstantTemplate.OUTPUT);
         driverR1RC1C.setEndPin(transistorRC1, TransistorTemplate.NPN_COLLECTOR);
         driverR1RC1C.setVertices(new Vertex[] {new Vertex(6, 3), new Vertex(8, 3), new Vertex(8, 13), new Vertex(10, 13)});
         Wire driverS1SC1C = new Wire();
-        driverS1SC1C.setStartPin(signalDriverS1, SignalSourceTemplate.OUTPUT);
+        driverS1SC1C.setStartPin(signalDriverS1, ConstantTemplate.OUTPUT);
         driverS1SC1C.setEndPin(transistorSC1, TransistorTemplate.NPN_COLLECTOR);
         driverS1SC1C.setVertices(new Vertex[] {new Vertex(6, 35), new Vertex(8, 35), new Vertex(8, 23), new Vertex(10, 23)});
         Wire driverS1SC2C = new Wire();
-        driverS1SC2C.setStartPin(signalDriverS1, SignalSourceTemplate.OUTPUT);
+        driverS1SC2C.setStartPin(signalDriverS1, ConstantTemplate.OUTPUT);
         driverS1SC2C.setEndPin(transistorSC2, TransistorTemplate.NPN_COLLECTOR);
         driverS1SC2C.setVertices(new Vertex[] {new Vertex(6, 35), new Vertex(8, 35), new Vertex(8, 29), new Vertex(10, 29)});
 
         Wire pulledR2RC2E = new Wire();
-        pulledR2RC2E.setStartPin(pulledR2, SignalSourceTemplate.OUTPUT);
+        pulledR2RC2E.setStartPin(pulledR2, ConstantTemplate.OUTPUT);
         pulledR2RC2E.setEndPin(transistorRC2, TransistorTemplate.NPN_EMITTER);
         pulledR2RC2E.setVertices(new Vertex[] {new Vertex(16, 3), new Vertex(18, 3), new Vertex(18, 8), new Vertex(16, 8)});
         Wire pulledR2RC1E = new Wire();
-        pulledR2RC1E.setStartPin(pulledR2, SignalSourceTemplate.OUTPUT);
+        pulledR2RC1E.setStartPin(pulledR2, ConstantTemplate.OUTPUT);
         pulledR2RC1E.setEndPin(transistorRC1, TransistorTemplate.NPN_EMITTER);
         pulledR2RC1E.setVertices(new Vertex[] {new Vertex(16, 3), new Vertex(18, 3), new Vertex(18, 14), new Vertex(16, 14)});
         Wire pulledR2SC1B = new Wire();
-        pulledR2SC1B.setStartPin(pulledR2, SignalSourceTemplate.OUTPUT);
+        pulledR2SC1B.setStartPin(pulledR2, ConstantTemplate.OUTPUT);
         pulledR2SC1B.setEndPin(transistorSC1, TransistorTemplate.NPN_BASE);
         pulledR2SC1B.setVertices(new Vertex[] {new Vertex(16, 3), new Vertex(18, 3), new Vertex(18, 18), new Vertex(6, 18), new Vertex(6, 25), new Vertex(10, 25)});
 
         Wire pulledS2RC1B = new Wire();
-        pulledS2RC1B.setStartPin(pulledS2, SignalSourceTemplate.OUTPUT);
+        pulledS2RC1B.setStartPin(pulledS2, ConstantTemplate.OUTPUT);
         pulledS2RC1B.setEndPin(transistorRC1, TransistorTemplate.NPN_BASE);
         pulledS2RC1B.setVertices(new Vertex[] {new Vertex(16, 35), new Vertex(18, 35), new Vertex(18, 20), new Vertex(7, 20), new Vertex(7, 15), new Vertex(10, 15)});
         Wire pulledS2SC1E = new Wire();
-        pulledS2SC1E.setStartPin(pulledS2, SignalSourceTemplate.OUTPUT);
+        pulledS2SC1E.setStartPin(pulledS2, ConstantTemplate.OUTPUT);
         pulledS2SC1E.setEndPin(transistorSC1, TransistorTemplate.NPN_EMITTER);
         pulledS2SC1E.setVertices(new Vertex[] {new Vertex(16, 35), new Vertex(18, 35), new Vertex(18, 24), new Vertex(16, 24)});
         Wire pulledS2SC2E = new Wire();
-        pulledS2SC2E.setStartPin(pulledS2, SignalSourceTemplate.OUTPUT);
+        pulledS2SC2E.setStartPin(pulledS2, ConstantTemplate.OUTPUT);
         pulledS2SC2E.setEndPin(transistorSC2, TransistorTemplate.NPN_EMITTER);
         pulledS2SC2E.setVertices(new Vertex[] {new Vertex(16, 35), new Vertex(18, 35), new Vertex(18, 30), new Vertex(16, 30)});
 
+        Wire toggleTest = new Wire();
+        toggleTest.setStartPin(toggleTest1, ToggleTemplate.OUTPUT);
+        toggleTest.setEndPin(toggleTest2, ToggleTemplate.OUTPUT);
+        toggleTest.setVertices(new Vertex[] {new Vertex(24, 15), new Vertex(26, 15), new Vertex(26, 25), new Vertex(24, 25)});
+
         testDesign.addChips(Arrays.asList(
                 transistorRC2, transistorRC1, transistorSC1, transistorSC2,
-                signalDriverR1, signalDriverS1, pulledR2, pulledS2
+                signalDriverR1, signalDriverS1, pulledR2, pulledS2,
+                toggleReset, toggleSet,
+                toggleTest1, toggleTest2
         ));
         testDesign.addWires(Arrays.asList(
                 resetRC1B, setSC1B,
                 driverR1RC1C, driverR1RC2C, driverS1SC1C, driverS1SC2C,
                 pulledR2RC1E, pulledR2RC2E, pulledR2SC1B,
-                pulledS2SC1E, pulledS2SC2E, pulledS2RC1B
+                pulledS2SC1E, pulledS2SC2E, pulledS2RC1B,
+                toggleTest
         ));
 
         Simulation.setSimulator(new MeshSimulator());
@@ -513,8 +528,8 @@ public class BreadboardWindow {
         toolbar.add(new UIButton("T4", () -> {}));
         toolbar.add(new UIButton("T5", () -> {}));
         toolbar.addSeparator();
-        toolbar.add(new UIStartStopButton(WorkerScheduler::startSimulation, WorkerScheduler::stopSimulation));
-        toolbar.add(new UISpinner<>(UISpinner.getIntegerHandler(), "ticks/sec", 1, 1000, 1, WorkerScheduler::setTargetTicksPerSecond));
+//        toolbar.add(new UIStartStopButton(WorkerScheduler::startSimulation, WorkerScheduler::stopSimulation));
+//        toolbar.add(new UISpinner<>(UISpinner.getIntegerHandler(), "ticks/sec", 1, 1000, 1, WorkerScheduler::setTargetTicksPerSecond));
         UIButton simSettings = new UIButton("\uE8B8", () -> {});
         simSettings.setFont(UITheme.getFont(ThemeKeys.Fonts.UI.SPINNER_BUTTON_DEFAULT));
         simSettings.setPadding(simSettings.getPadding()); // TODO set to 8 on X

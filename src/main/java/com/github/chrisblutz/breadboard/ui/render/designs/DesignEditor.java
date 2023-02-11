@@ -1,24 +1,18 @@
 package com.github.chrisblutz.breadboard.ui.render.designs;
 
-import com.github.chrisblutz.breadboard.components.TransistorTemplate;
-import com.github.chrisblutz.breadboard.designs.Design;
-import com.github.chrisblutz.breadboard.designs.components.Chip;
-import com.github.chrisblutz.breadboard.designs.components.ChipPin;
-import com.github.chrisblutz.breadboard.designs.components.Pin;
-import com.github.chrisblutz.breadboard.designs.components.Wire;
-import com.github.chrisblutz.breadboard.simulationproto.LogicState;
-import com.github.chrisblutz.breadboard.simulationproto.SimulatedDesign;
+import com.github.chrisblutz.breadboard.designs.*;
+import com.github.chrisblutz.breadboard.designs.templates.ToggleTemplate;
+import com.github.chrisblutz.breadboard.designs.templates.TransistorTemplate;
+import com.github.chrisblutz.breadboard.simulation.LogicState;
+import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
 import com.github.chrisblutz.breadboard.ui.toolkit.*;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
-import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Rectangle;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
-import com.github.chrisblutz.breadboard.ui.window.BreadboardWindow;
 
 import java.awt.event.KeyEvent;
-import java.awt.geom.RoundRectangle2D;
 
 /**
  * This class is used to render a single design.
@@ -42,6 +36,8 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private DesignRenderer renderer = new DesignRenderer();
     private ChipPin hoveredPin = null;
     private Chip hoveredChip = null;
+
+    private boolean panning = false;
 
     public DesignEditor(Design design) {
         this(design, null);
@@ -147,7 +143,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private void drawPinBackground(UIGraphics graphics, Ellipse ellipse, LogicState state, boolean hovered) {
         // Draw border around the pin
         graphics.setColor(DesignEditorUtils.getColorForLogicState(state).darker());
-        graphics.setStroke(UIStroke.solid(0.2f)); // TODO default
+        graphics.setStroke(UIStroke.solid(0.3f)); // TODO default
         graphics.draw(ellipse);
     }
 
@@ -188,7 +184,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         graphics.withCopy(chipGraphics -> {
             chipGraphics.translate(chipShape.getX(), chipShape.getY()); // TODO
-            chip.getChipTemplate().renderChipPackage(chipGraphics, design);
+            chip.getChipTemplate().renderChipPackage(chipGraphics, chip, design);
         });
     }
 
@@ -260,18 +256,18 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             uiGraphics.drawStringCentered(tooltipText, (float) (x + 10 + (tooltipTextBounds.getWidth() / 2)), (float) (y + 5 + (tooltipTextBounds.getHeight() / 2)));
         }
 
-        if (hoveredPin == null && hoveredChip == null) {
-            Chip chip = new Chip();
-            chip.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
-            int newChipX = gridMouseX - (chip.getChipTemplate().getWidth() / 2);
-            int newChipY = gridMouseY - (chip.getChipTemplate().getHeight() / 2);
-            scaledGraphics.setAlpha(0.8f);
-            drawChip(scaledGraphics, chip, SimulatedDesign.none(), renderer.getNewChipShape(chip, newChipX, newChipY), false);
-            for (Pin pin : chip.getChipTemplate().getPins()) {
-                drawPinBackground(scaledGraphics, renderer.getNewPinShape(chip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
-                drawPinForeground(scaledGraphics, renderer.getNewPinShape(chip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
-            }
-        }
+//        if (hoveredPin == null && hoveredChip == null) {
+//            Chip chip = new Chip();
+//            chip.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
+//            int newChipX = gridMouseX - (chip.getChipTemplate().getWidth() / 2);
+//            int newChipY = gridMouseY - (chip.getChipTemplate().getHeight() / 2);
+//            scaledGraphics.setAlpha(0.8f);
+//            drawChip(scaledGraphics, chip, SimulatedDesign.none(), renderer.getNewChipShape(chip, newChipX, newChipY), false);
+//            for (Pin pin : chip.getChipTemplate().getPins()) {
+//                drawPinBackground(scaledGraphics, renderer.getNewPinShape(chip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
+//                drawPinForeground(scaledGraphics, renderer.getNewPinShape(chip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
+//            }
+//        }
     }
 
     private int getActualX(int gridX) {
@@ -331,24 +327,21 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             mouseDragStartY = y;
             dragStartTranslateX = translateX;
             dragStartTranslateY = translateY;
+            panning = true;
         }
         return true;
     }
 
     @Override
     public void onMouseReleased(int x, int y, int button) {
-        if (button == 1) {
-            if (BreadboardWindow.resetDriver.getDrivenActualState() == LogicState.LOW) {
-                BreadboardWindow.resetDriver.setDrivenActualState(LogicState.HIGH);
-            } else {
-                BreadboardWindow.resetDriver.setDrivenActualState(LogicState.LOW);
+        if (button == 1 && hoveredChip != null && hoveredPin == null) {
+            if (hoveredChip.getChipTemplate() instanceof ToggleTemplate toggleTemplate) {
+                LogicState currentState = toggleTemplate.getDrivenState(hoveredChip);
+                LogicState newState = currentState == LogicState.LOW ? LogicState.HIGH : LogicState.LOW;
+                toggleTemplate.setDrivenState(hoveredChip, newState);
             }
-        } else if (button == 3) {
-            if (BreadboardWindow.setDriver.getDrivenActualState() == LogicState.LOW) {
-                BreadboardWindow.setDriver.setDrivenActualState(LogicState.HIGH);
-            } else {
-                BreadboardWindow.setDriver.setDrivenActualState(LogicState.LOW);
-            }
+        } else if (button == 2) {
+            panning = false;
         }
     }
 
@@ -362,11 +355,13 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     @Override
     public void onMouseDragged(int x, int y) {
-        mouseX = x;
-        mouseY = y;
-        calculateHover();
-        translateX = dragStartTranslateX + (x - mouseDragStartX) / zoom;
-        translateY = dragStartTranslateY + (y - mouseDragStartY) / zoom;
+        if (panning) {
+            mouseX = x;
+            mouseY = y;
+            calculateHover();
+            translateX = dragStartTranslateX + (x - mouseDragStartX) / zoom;
+            translateY = dragStartTranslateY + (y - mouseDragStartY) / zoom;
+        }
     }
 
     @Override

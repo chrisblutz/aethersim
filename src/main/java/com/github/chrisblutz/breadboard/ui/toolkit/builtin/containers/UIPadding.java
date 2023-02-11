@@ -6,7 +6,6 @@ import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Padding;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 
-import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 

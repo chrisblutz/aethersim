@@ -1,8 +1,5 @@
 package com.github.chrisblutz.breadboard.ui.toolkit.display.timing;
 
-import com.github.chrisblutz.breadboard.logging.BreadboardLogging;
-import com.github.chrisblutz.breadboard.simulation.workers.WorkerScheduler;
-
 public class RenderPassManager {
 
     private long targetFrameDuration;
