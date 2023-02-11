@@ -32,7 +32,8 @@ public class Wire implements BreadboardSavable {
         // "Connect" this segment to it's nodes
         for (WireNode node : segment.getEndpointNodes())
             node.connect(segment);
-        // If any pins are connected to this segment, track them
+        // Track the pins and nodes connected to this segment
+        nodes.addAll(segment.getEndpointNodes());
         connectedPins.addAll(segment.getEndpointPins());
     }
 

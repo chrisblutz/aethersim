@@ -14,7 +14,7 @@ import java.util.Map;
 public class DesignRenderer {
 
     private static final double PIN_RADIUS = 0.4;
-    private static final double NODE_RADIUS = 0.25;
+    private static final double NODE_RADIUS = 0.3;
     private static final double WIRE_ARC_MIDPOINT_GUIDE = 0.5 - ((Math.sqrt(2) / 2) / 2);
 
     private final Map<ChipPin, Ellipse> pinShapes = new LinkedHashMap<>();

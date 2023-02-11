@@ -7,25 +7,26 @@ import java.util.*;
 
 public class MeshDesign {
 
-    private final Set<ChipPin> pins = new LinkedHashSet<>();
-    private final Map<ChipPin, Set<Wire>> wireConnections = new HashMap<>();
-    private final List<Set<ChipPin>> uniqueMeshedPinSets = new ArrayList<>();
+    private final Set<MeshPin> pins = new LinkedHashSet<>();
+    private final Map<MeshPin, Set<Wire>> wireConnections = new HashMap<>();
+    private final Map<MeshPin, Set<MeshPin>> pinToPinConnections = new HashMap<>();
+    private final List<Set<MeshPin>> uniqueMeshedPinSets = new ArrayList<>();
 
     private MeshDesign() {}
 
-    public Set<ChipPin> getPins() {
+    public Set<MeshPin> getPins() {
         return pins;
     }
 
-    public List<Set<ChipPin>> getUniqueMeshedPinSets() {
+    public List<Set<MeshPin>> getUniqueMeshedPinSets() {
         return uniqueMeshedPinSets;
     }
 
-    private Set<Wire> getConnections(ChipPin pin) {
-        return wireConnections.getOrDefault(pin, new HashSet<>());
+    private Set<MeshPin> getConnections(MeshPin pin) {
+        return pinToPinConnections.getOrDefault(pin, new HashSet<>());
     }
 
-    private void generateFromChipDesign(Chip chip, Design design) {
+    private void generateFromChipDesign(Chip chip, Chip[] ancestors, Design design) {
         // If the chip is null, this is the top-level design, so only look at design pins
         // Otherwise, look at the chip template
         Collection<Pin> chipPins;
@@ -33,21 +34,40 @@ public class MeshDesign {
             chipPins = design.getPins();
         else
             chipPins = chip.getChipTemplate().getPins();
+
         // For each pin, create an entry in our pin set
         for (Pin pin : chipPins)
-            pins.add(new ChipPin(chip, pin));
+            pins.add(new MeshPin(pin, chip, ancestors));
 
         // If this chip is a built-in, skip the rest of the generation here
         if (design == null)
             return;
 
+        // Calculate new chip ancestry for future sub-chips
+        Chip[] newAncestors;
+        if (chip != null) {
+            newAncestors = new Chip[ancestors.length + 1];
+            System.arraycopy(ancestors, 0, newAncestors, 0, ancestors.length);
+            newAncestors[ancestors.length] = chip;
+        } else {
+            newAncestors = ancestors;
+        }
+
         // For each wire in this design, add it to the set of connections for the pins it connects to
         for (Wire wire : design.getWires()) {
-            // For the pins, add this wire to the connection sets
+            // Build a set of mesh pins for all the pins connected to this wire
+            Set<MeshPin> wireMeshPins = new LinkedHashSet<>();
             for (ChipPin pin : wire.getConnectedPins()) {
-                if (!wireConnections.containsKey(pin))
-                    wireConnections.put(pin, new LinkedHashSet<>());
-                wireConnections.get(pin).add(wire);
+                // Convert the chip pin into a mesh pin that accounts for chip ancestry
+                MeshPin meshPin = new MeshPin(pin.pin(), pin.chip(), newAncestors);
+                wireMeshPins.add(meshPin);
+            }
+
+            // For each mesh pin connected to this wire, map that pin to all other pins in the set
+            for (MeshPin meshPin : wireMeshPins) {
+                if (!pinToPinConnections.containsKey(meshPin))
+                    pinToPinConnections.put(meshPin, new LinkedHashSet<>());
+                pinToPinConnections.get(meshPin).addAll(wireMeshPins);
             }
         }
 
@@ -58,17 +78,17 @@ public class MeshDesign {
                 innerChipDesign = chipTemplate.getDesign();
             else
                 innerChipDesign = null;
-            generateFromChipDesign(innerChip, innerChipDesign);
+            generateFromChipDesign(innerChip, newAncestors, innerChipDesign);
         }
     }
 
     private void generateUniqueSets() {
         // Start with the total set of pins in this design, then work backwards until we have none left
-        Set<ChipPin> remainingSet = new LinkedHashSet<>(pins);
+        Set<MeshPin> remainingSet = new LinkedHashSet<>(pins);
         while (!remainingSet.isEmpty()) {
             // Starting with a random pin from the set, build a set of all pins that one is connected to
-            Set<ChipPin> currentSet = new LinkedHashSet<>();
-            ChipPin origin = remainingSet.iterator().next();
+            Set<MeshPin> currentSet = new LinkedHashSet<>();
+            MeshPin origin = remainingSet.iterator().next();
             currentSet.add(origin);
             remainingSet.remove(origin);
             generateUniqueSetFromPin(remainingSet, currentSet, origin);
@@ -78,16 +98,18 @@ public class MeshDesign {
         }
     }
 
-    private void generateUniqueSetFromPin(Set<ChipPin> remainingSet, Set<ChipPin> uniqueSet, ChipPin origin) {
+    private void generateUniqueSetFromPin(Set<MeshPin> remainingSet, Set<MeshPin> uniqueSet, MeshPin origin) {
         // Get all the wires that this pin connects to, and iterate through them.  If the pin we arrive
         // at is not already in the set, add it and continue recursively.
-        for (Wire wire : getConnections(origin)) {
-            for (ChipPin pin : wire.getConnectedPins()) {
-                if (!uniqueSet.contains(pin)) {
-                    uniqueSet.add(pin);
-                    remainingSet.remove(pin);
-                    generateUniqueSetFromPin(remainingSet, uniqueSet, pin);
-                }
+        for (MeshPin meshPin : getConnections(origin)) {
+            // If the mesh pin is itself, continue (since we don't prune nodes out of their own connection sets
+            if (meshPin == origin)
+                continue;
+
+            if (!uniqueSet.contains(meshPin)) {
+                uniqueSet.add(meshPin);
+                remainingSet.remove(meshPin);
+                generateUniqueSetFromPin(remainingSet, uniqueSet, meshPin);
             }
         }
     }
@@ -95,7 +117,10 @@ public class MeshDesign {
     public static MeshDesign from(Design design) {
         // Create a new mesh design and populate it with pins and wires
         MeshDesign meshDesign = new MeshDesign();
-        meshDesign.generateFromChipDesign(null, design);
+        meshDesign.generateFromChipDesign(null, new Chip[0], design);
+        for (MeshPin pin : meshDesign.pins) {
+            System.out.println(pin);
+        }
         // Generate the list of unique "meshed" pin sets (all pins that are connected to one another)
         meshDesign.generateUniqueSets();
         // After generation, clear the wire connection map to avoid keeping it in memory unnecessarily

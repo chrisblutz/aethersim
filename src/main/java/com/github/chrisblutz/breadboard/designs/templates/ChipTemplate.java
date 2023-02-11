@@ -28,7 +28,7 @@ public abstract class ChipTemplate implements BreadboardSavable {
         return id;
     }
 
-    protected void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -36,7 +36,7 @@ public abstract class ChipTemplate implements BreadboardSavable {
         return name;
     }
 
-    protected void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -44,7 +44,7 @@ public abstract class ChipTemplate implements BreadboardSavable {
         return width;
     }
 
-    protected void setWidth(int width) {
+    public void setWidth(int width) {
         this.width = width;
     }
 
@@ -52,7 +52,7 @@ public abstract class ChipTemplate implements BreadboardSavable {
         return height;
     }
 
-    protected void setHeight(int height) {
+    public void setHeight(int height) {
         this.height = height;
     }
 

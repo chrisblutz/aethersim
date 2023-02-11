@@ -18,6 +18,34 @@ public class WireSegment {
         this.vertices = vertices;
     }
 
+    public WireSegment(ChipPin endpoint1, ChipPin endpoint2, WireVertex... vertices) {
+        this(vertices);
+
+        addEndpoint(endpoint1);
+        addEndpoint(endpoint2);
+    }
+
+    public WireSegment(ChipPin endpoint1, WireNode endpoint2, WireVertex... vertices) {
+        this(vertices);
+
+        addEndpoint(endpoint1);
+        addEndpoint(endpoint2);
+    }
+
+    public WireSegment(WireNode endpoint1, ChipPin endpoint2, WireVertex... vertices) {
+        this(vertices);
+
+        addEndpoint(endpoint1);
+        addEndpoint(endpoint2);
+    }
+
+    public WireSegment(WireNode endpoint1, WireNode endpoint2, WireVertex... vertices) {
+        this(vertices);
+
+        addEndpoint(endpoint1);
+        addEndpoint(endpoint2);
+    }
+
     public Set<ChipPin> getEndpointPins() {
         return endpointPins;
     }

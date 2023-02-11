@@ -48,6 +48,24 @@ public class Design implements BreadboardSavable {
         return chips;
     }
 
+    public void addPin(Pin pin) {
+        pins.add(pin);
+    }
+
+    public void addPins(Pin... pins) {
+        for (Pin pin : pins)
+            addPin(pin);
+    }
+
+    public void removePin(Pin pin) {
+        pins.remove(pin);
+    }
+
+    public void removePins(Pin... pins) {
+        for (Pin pin : pins)
+            removePin(pin);
+    }
+
     public void addChip(Chip chip) {
         chips.add(chip);
 
@@ -62,7 +80,7 @@ public class Design implements BreadboardSavable {
             transistorCount += designedTemplate.getDesign().getTransistorCount();
     }
 
-    public void addChips(Collection<Chip> chips) {
+    public void addChips(Chip... chips) {
         for (Chip chip : chips)
             addChip(chip);
     }
@@ -81,7 +99,7 @@ public class Design implements BreadboardSavable {
             transistorCount -= designedTemplate.getDesign().getTransistorCount();
     }
 
-    public void removeChips(Collection<Chip> chips) {
+    public void removeChips(Chip... chips) {
         for (Chip chip : chips)
             removeChip(chip);
     }

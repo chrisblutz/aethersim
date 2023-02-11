@@ -38,7 +38,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private ChipPin hoveredPin = null;
     private Chip hoveredChip = null;
 
-    private boolean panning = false;
+    private boolean adjusted = false, panning = false;
 
     public DesignEditor(Design design) {
         this(design, null);
@@ -53,6 +53,34 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         renderer.generate(design);
 
         setMinimumSize(new UIDimension(200, 200));
+    }
+
+    @Override
+    public void setSize(UIDimension size) {
+        super.setSize(size);
+
+        // Adjust the design's location and scaling in the view if it hasn't been adjusted previously
+        if (!adjusted) {
+            double actualDesignWidth = design.getWidth() * DEFAULT_GRID_UNIT;
+            double actualDesignHeight = design.getHeight() * DEFAULT_GRID_UNIT;
+
+            double fitToWidthZoom = DEFAULT_GRID_UNIT, fitToHeightZoom = DEFAULT_GRID_UNIT;
+            if (designGridActualWidth > getWidth())
+                fitToWidthZoom = (double) getWidth() / design.getWidth();
+            if (designGridActualHeight > getHeight())
+                fitToHeightZoom = (double) getHeight() / design.getHeight();
+
+            double targetZoom = Math.min(DEFAULT_GRID_UNIT, Math.min(fitToWidthZoom, fitToHeightZoom));
+
+            actualDesignWidth = design.getWidth() * targetZoom;
+            actualDesignHeight = design.getHeight() * targetZoom;
+
+            zoom = targetZoom;
+            translateX = (((double) getWidth() / 2) - (actualDesignWidth / 2)) / zoom;
+            translateY = (((double) getHeight() / 2) - (actualDesignHeight / 2)) / zoom;
+
+            calculateHover();
+        }
     }
 
     @Override
@@ -175,7 +203,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         // Draw all wire nodes
         for (WireNode node : wire.getNodes())
-            graphics.draw(renderer.getWireNodeShape(node));
+            graphics.fill(renderer.getWireNodeShape(node));
     }
 
     private void drawChip(UIGraphics graphics, Chip chip) {
@@ -367,6 +395,8 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             calculateHover();
             translateX = dragStartTranslateX + (x - mouseDragStartX) / zoom;
             translateY = dragStartTranslateY + (y - mouseDragStartY) / zoom;
+
+            adjusted = true;
         }
     }
 
@@ -386,6 +416,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         if (newZoom < 1)
             newZoom = 1;
         zoom(newZoom);
+        adjusted = true;
         return true;
     }
 

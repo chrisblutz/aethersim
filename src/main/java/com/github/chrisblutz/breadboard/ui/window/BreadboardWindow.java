@@ -1,9 +1,7 @@
 package com.github.chrisblutz.breadboard.ui.window;
 
 import com.github.chrisblutz.breadboard.designs.*;
-import com.github.chrisblutz.breadboard.designs.templates.ConstantTemplate;
-import com.github.chrisblutz.breadboard.designs.templates.ToggleTemplate;
-import com.github.chrisblutz.breadboard.designs.templates.TransistorTemplate;
+import com.github.chrisblutz.breadboard.designs.templates.*;
 import com.github.chrisblutz.breadboard.designs.wires.WireNode;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
@@ -38,526 +36,321 @@ public class BreadboardWindow {
 
     public static void initializeWindow() {
 
-//        frame = new JFrame("Breadboard");
-//        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//
-//        try {
-//            Image image = ImageIO.read(Breadboard.class.getResourceAsStream("/assets/icon.png"));
-//            frame.setIconImage(image);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        canvas = new BreadboardCanvas();
-//        frame.setContentPane(canvas);
-//        frame.pack();
-//
-//        frame.addWindowListener(new WindowAdapter() {
-//        });
-//        frame.addContainerListener(new ContainerAdapter() {
-//        });
-//        frame.getContentPane().addComponentListener(new ComponentAdapter() {
-//            @Override
-//            public void componentResized(ComponentEvent e) {
-//                System.out.println(e.getComponent().getWidth() + "x" + e.getComponent().getHeight());
-//            }
-//        });
-//
-//        frame.setVisible(true);
+        // +----------------------+
+        // |    NOR Gate Setup    |
+        // +----------------------+
 
+        Design norDesign = new Design();
+        norDesign.setWidth(20);
+        norDesign.setHeight(16);
 
-        // +-----------------+
-        // | NAND GATE SETUP |
-        // +-----------------+
+        Pin norInput1 = new Pin();
+        norInput1.setId("input_1");
+        norInput1.setName("Input");
+        norInput1.setChipX(0);
+        norInput1.setChipY(1);
+        norInput1.setDesignX(0);
+        norInput1.setDesignY(8);
 
-//        Design nandDesign = new Design();
-//        nandDesign.width = 24;
-//        nandDesign.height = 8;
-//
-//        Pin nandDesignInput1 = new Pin();
-//        nandDesignInput1.chipX = 0;
-//        nandDesignInput1.chipY = 1;
-//        nandDesignInput1.designX = 0;
-//        nandDesignInput1.designY = 3;
-//        Pin nandDesignInput2 = new Pin();
-//        nandDesignInput2.chipX = 0;
-//        nandDesignInput2.chipY = 3;
-//        nandDesignInput2.designX = 0;
-//        nandDesignInput2.designY = 5;
-//        Pin nandDesignOutput = new Pin();
-//        nandDesignOutput.chipX = 6;
-//        nandDesignOutput.chipY = 2;
-//        nandDesignOutput.designX = 24;
-//        nandDesignOutput.designY = 4;
-//        nandDesign.getPins().addAll(Arrays.asList(nandDesignInput1, nandDesignInput2, nandDesignOutput));
-//
-//        Chip nandAnd = new Chip();
-//        nandAnd.chipTemplate = BuiltinChipTemplate.getAndGateTemplate();
-//        nandAnd.x = 4;
-//        nandAnd.y = 2;
-//        Chip nandNot = new Chip();
-//        nandNot.chipTemplate = BuiltinChipTemplate.getNotGateTemplate();
-//        nandNot.x = 14;
-//        nandNot.y = 3;
-//        nandDesign.getChips().addAll(Arrays.asList(nandAnd, nandNot));
-//
-//        Wire nandDesignInput1AndInput1 = new Wire();
-//        nandDesignInput1AndInput1.vertices = new Vertex[] {new Vertex(0, 3), new Vertex(4, 3)};
-//        nandDesignInput1AndInput1.startPin = nandDesignInput1;
-//        nandDesignInput1AndInput1.endPin = AndGateChipLogic.OPERAND_1_PIN;
-//        nandDesignInput1AndInput1.endChip = nandAnd;
-//        Wire nandDesignInput2AndInput2 = new Wire();
-//        nandDesignInput2AndInput2.vertices = new Vertex[] {new Vertex(0, 5), new Vertex(4, 5)};
-//        nandDesignInput2AndInput2.startPin = nandDesignInput2;
-//        nandDesignInput2AndInput2.endPin = AndGateChipLogic.OPERAND_2_PIN;
-//        nandDesignInput2AndInput2.endChip = nandAnd;
-//        Wire nandAndOutputNotInput = new Wire();
-//        nandAndOutputNotInput.vertices = new Vertex[] {new Vertex(10, 4), new Vertex(14, 4)};
-//        nandAndOutputNotInput.startPin = AndGateChipLogic.RESULT_PIN;
-//        nandAndOutputNotInput.startChip = nandAnd;
-//        nandAndOutputNotInput.endPin = NotGateChipLogic.OPERAND_PIN;
-//        nandAndOutputNotInput.endChip = nandNot;
-//        Wire nandNotOutputDesignOutput = new Wire();
-//        nandNotOutputDesignOutput.vertices = new Vertex[] {new Vertex(20, 4), new Vertex(24, 4)};
-//        nandNotOutputDesignOutput.startPin = NotGateChipLogic.RESULT_PIN;
-//        nandNotOutputDesignOutput.startChip = nandNot;
-//        nandNotOutputDesignOutput.endPin = nandDesignOutput;
-//        nandDesign.getWires().addAll(Arrays.asList(nandDesignInput1AndInput1, nandDesignInput2AndInput2, nandAndOutputNotInput, nandNotOutputDesignOutput));
-//
-//        DesignedChipTemplate nandGateTemplate = new DesignedChipTemplate();
-//        nandGateTemplate.id = "nand";
-//        nandGateTemplate.name = "NAND";
-//        nandGateTemplate.width = 6;
-//        nandGateTemplate.height = 4;
-//        nandGateTemplate.design = nandDesign;
+        Pin norInput2 = new Pin();
+        norInput2.setId("input_2");
+        norInput2.setName("Input");
+        norInput2.setChipX(0);
+        norInput2.setChipY(3);
+        norInput2.setDesignX(0);
+        norInput2.setDesignY(14);
 
-        // +------------------------+
-        // | TEST ORIENTATION SETUP |
-        // +------------------------+
+        Pin norOutput = new Pin();
+        norOutput.setId("output");
+        norOutput.setName("Output");
+        norOutput.setChipX(6);
+        norOutput.setChipY(2);
+        norOutput.setDesignX(20);
+        norOutput.setDesignY(10);
 
-//        Design testDesign = new Design();
-//        testDesign.width = 24;
-//        testDesign.height = 14;
-//
-//        Pin testDesignInput1 = new Pin();
-//        testDesignInput1.designX = 0;
-//        testDesignInput1.designY = 3;
-//        Pin testDesignInput2 = new Pin();
-//        testDesignInput2.designX = 0;
-//        testDesignInput2.designY = 5;
-//        Pin testDesignInput3 = new Pin();
-//        testDesignInput3.designX = 0;
-//        testDesignInput3.designY = 9;
-//        Pin testDesignInput4 = new Pin();
-//        testDesignInput4.designX = 0;
-//        testDesignInput4.designY = 11;
-//        Pin testDesignOutput = new Pin();
-//        testDesignOutput.designX = 24;
-//        testDesignOutput.designY = 7;
-//        testDesign.getPins().addAll(Arrays.asList(testDesignInput1, testDesignInput2, testDesignInput3, testDesignInput4, testDesignOutput));
-//
-//        Chip testNand1 = new Chip();
-//        testNand1.chipTemplate = nandGateTemplate;
-//        testNand1.x = 4;
-//        testNand1.y = 2;
-//        Chip testNand2 = new Chip();
-//        testNand2.chipTemplate = nandGateTemplate;
-//        testNand2.x = 4;
-//        testNand2.y = 8;
-//        Chip testAnd1 = new Chip();
-//        testAnd1.chipTemplate = BuiltinChipTemplate.getAndGateTemplate();
-//        testAnd1.x = 14;
-//        testAnd1.y = 5;
-//        testDesign.getChips().addAll(Arrays.asList(testNand1, testNand2, testAnd1));
-//
-//        Wire testDesignInput1Nand1Input1 = new Wire();
-//        testDesignInput1Nand1Input1.vertices = new Vertex[] {new Vertex(0, 3), new Vertex(4, 3)};
-//        testDesignInput1Nand1Input1.startPin = testDesignInput1;
-//        testDesignInput1Nand1Input1.endPin = nandDesignInput1;
-//        testDesignInput1Nand1Input1.endChip = testNand1;
-//        Wire testDesignInput2Nand1Input2 = new Wire();
-//        testDesignInput2Nand1Input2.vertices = new Vertex[] {new Vertex(0, 5), new Vertex(4, 5)};
-//        testDesignInput2Nand1Input2.startPin = testDesignInput2;
-//        testDesignInput2Nand1Input2.endPin = nandDesignInput2;
-//        testDesignInput2Nand1Input2.endChip = testNand1;
-//        Wire testDesignInput3Nand2Input1 = new Wire();
-//        testDesignInput3Nand2Input1.vertices = new Vertex[] {new Vertex(0, 9), new Vertex(4, 9)};
-//        testDesignInput3Nand2Input1.startPin = testDesignInput3;
-//        testDesignInput3Nand2Input1.endPin = nandDesignInput1;
-//        testDesignInput3Nand2Input1.endChip = testNand2;
-//        Wire testDesignInput4Nand2Input2 = new Wire();
-//        testDesignInput4Nand2Input2.vertices = new Vertex[] {new Vertex(0, 11), new Vertex(4, 11)};
-//        testDesignInput4Nand2Input2.startPin = testDesignInput4;
-//        testDesignInput4Nand2Input2.endPin = nandDesignInput2;
-//        testDesignInput4Nand2Input2.endChip = testNand2;
-//        Wire testNand1OutputAndInput1 = new Wire();
-//        testNand1OutputAndInput1.vertices = new Vertex[] {new Vertex(10, 4), new Vertex(12, 4), new Vertex(12, 6), new Vertex(14, 6)};
-//        testNand1OutputAndInput1.startPin = nandDesignOutput;
-//        testNand1OutputAndInput1.startChip = testNand1;
-//        testNand1OutputAndInput1.endPin = AndGateChipLogic.OPERAND_1_PIN;
-//        testNand1OutputAndInput1.endChip = testAnd1;
-//        Wire testNand2OutputAndInput2 = new Wire();
-//        testNand2OutputAndInput2.vertices = new Vertex[] {new Vertex(10, 10), new Vertex(12, 10), new Vertex(12, 8), new Vertex(14, 8)};
-//        testNand2OutputAndInput2.startPin = nandDesignOutput;
-//        testNand2OutputAndInput2.startChip = testNand2;
-//        testNand2OutputAndInput2.endPin = AndGateChipLogic.OPERAND_2_PIN;
-//        testNand2OutputAndInput2.endChip = testAnd1;
-//        Wire testAndOutputDesignOutput = new Wire();
-//        testAndOutputDesignOutput.vertices = new Vertex[] {new Vertex(20, 7), new Vertex(24, 7)};
-//        testAndOutputDesignOutput.startPin = AndGateChipLogic.RESULT_PIN;
-//        testAndOutputDesignOutput.startChip = testAnd1;
-//        testAndOutputDesignOutput.endPin = testDesignOutput;
-//        testDesign.getWires().addAll(Arrays.asList(testDesignInput1Nand1Input1, testDesignInput2Nand1Input2, testDesignInput3Nand2Input1, testDesignInput4Nand2Input2, testNand1OutputAndInput1, testNand2OutputAndInput2, testAndOutputDesignOutput));
+        Chip norTransistor1 = new Chip();
+        norTransistor1.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
+        norTransistor1.setX(9);
+        norTransistor1.setY(5);
 
-//        Design testDesign = new Design();
-//        testDesign.width = 14;
-//        testDesign.height = 15;
-//
-//        Pin testDesignInput1 = new Pin();
-//        testDesignInput1.designX = 0;
-//        testDesignInput1.designY = 3;
-//        Pin testDesignInput2 = new Pin();
-//        testDesignInput2.designX = 0;
-//        testDesignInput2.designY = 12;
-//        Pin testDesignOutput1 = new Pin();
-//        testDesignOutput1.designX = 14;
-//        testDesignOutput1.designY = 4;
-//        Pin testDesignOutput2 = new Pin();
-//        testDesignOutput2.designX = 14;
-//        testDesignOutput2.designY = 11;
-//        testDesign.getPins().addAll(Arrays.asList(testDesignInput1, testDesignInput2, testDesignOutput1, testDesignOutput2));
-//
-//        Chip testNand1 = new Chip();
-//        testNand1.chipTemplate = nandGateTemplate;
-//        testNand1.x = 4;
-//        testNand1.y = 2;
-//        Chip testNand2 = new Chip();
-//        testNand2.chipTemplate = nandGateTemplate;
-//        testNand2.x = 4;
-//        testNand2.y = 9;
-//        testDesign.getChips().addAll(Arrays.asList(testNand1, testNand2));
-//
-//        Wire testDesignInput1Nand1Input1 = new Wire();
-//        testDesignInput1Nand1Input1.vertices = new Vertex[] {new Vertex(0, 3), new Vertex(4, 3)};
-//        testDesignInput1Nand1Input1.startPin = testDesignInput1;
-//        testDesignInput1Nand1Input1.endPin = nandDesignInput1;
-//        testDesignInput1Nand1Input1.endChip = testNand1;
-//        Wire testDesignInput2Nand2Input2 = new Wire();
-//        testDesignInput2Nand2Input2.vertices = new Vertex[] {new Vertex(0, 12), new Vertex(4, 12)};
-//        testDesignInput2Nand2Input2.startPin = testDesignInput2;
-//        testDesignInput2Nand2Input2.endPin = nandDesignInput2;
-//        testDesignInput2Nand2Input2.endChip = testNand2;
-//        Wire testDesignNand1OutputNand2Input1 = new Wire();
-//        testDesignNand1OutputNand2Input1.vertices = new Vertex[] {new Vertex(10, 4), new Vertex(12, 4), new Vertex(12, 8), new Vertex(2, 8), new Vertex(2, 10), new Vertex(4, 10)};
-//        testDesignNand1OutputNand2Input1.startPin = nandDesignOutput;
-//        testDesignNand1OutputNand2Input1.startChip = testNand1;
-//        testDesignNand1OutputNand2Input1.endPin = nandDesignInput1;
-//        testDesignNand1OutputNand2Input1.endChip = testNand2;
-//        Wire testDesignNand2OutputNand1Input2 = new Wire();
-//        testDesignNand2OutputNand1Input2.vertices = new Vertex[] {new Vertex(10, 11), new Vertex(11, 11), new Vertex(11, 7), new Vertex(3, 7), new Vertex(3, 5), new Vertex(4, 5)};
-//        testDesignNand2OutputNand1Input2.startPin = nandDesignOutput;
-//        testDesignNand2OutputNand1Input2.startChip = testNand2;
-//        testDesignNand2OutputNand1Input2.endPin = nandDesignInput2;
-//        testDesignNand2OutputNand1Input2.endChip = testNand1;
-//        Wire testNand1OutputDesignOutput1 = new Wire();
-//        testNand1OutputDesignOutput1.vertices = new Vertex[] {new Vertex(10, 4), new Vertex(14, 4)};
-//        testNand1OutputDesignOutput1.startPin = nandDesignOutput;
-//        testNand1OutputDesignOutput1.startChip = testNand1;
-//        testNand1OutputDesignOutput1.endPin = testDesignOutput1;
-//        Wire testNand2OutputDesignOutput2 = new Wire();
-//        testNand2OutputDesignOutput2.vertices = new Vertex[] {new Vertex(10, 11), new Vertex(14, 11)};
-//        testNand2OutputDesignOutput2.startPin = nandDesignOutput;
-//        testNand2OutputDesignOutput2.startChip = testNand2;
-//        testNand2OutputDesignOutput2.endPin = testDesignOutput2;
-//        testDesign.getWires().addAll(Arrays.asList(testDesignInput1Nand1Input1, testDesignInput2Nand2Input2, testDesignNand1OutputNand2Input1, testDesignNand2OutputNand1Input2, testNand1OutputDesignOutput1, testNand2OutputDesignOutput2));
-//
-//        DesignInstance designInstance = MeshGenerator.generateMeshForDesign(testDesign);
-//        DesignInstance nand1DesignInstance = designInstance.getDesignInstanceForChip(testNand1);
-//        DesignInstance nand2DesignInstance = designInstance.getDesignInstanceForChip(testNand2);
+        Chip norTransistor2 = new Chip();
+        norTransistor2.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
+        norTransistor2.setX(9);
+        norTransistor2.setY(11);
+
+        Chip norDrivenLow = new Chip();
+        norDrivenLow.setChipTemplate(ConstantTemplate.getDrivenLowTemplate());
+        norDrivenLow.setX(1);
+        norDrivenLow.setY(1);
+
+        Chip norPulledHigh = new Chip();
+        norPulledHigh.setChipTemplate(ConstantTemplate.getPulledHighTemplate());
+        norPulledHigh.setX(11);
+        norPulledHigh.setY(1);
+
+        Wire norInput1Wire = new Wire();
+        WireSegment norInput1WireSegment = new WireSegment(new WireVertex(0, 8), new WireVertex(9, 8));
+        norInput1WireSegment.addEndpoint(new ChipPin(null, norInput1));
+        norInput1WireSegment.addEndpoint(new ChipPin(norTransistor1, TransistorTemplate.NPN_BASE));
+        norInput1Wire.addSegment(norInput1WireSegment);
+
+        Wire norInput2Wire = new Wire();
+        WireSegment norInput2WireSegment = new WireSegment(new WireVertex(0, 14), new WireVertex(9, 14));
+        norInput2WireSegment.addEndpoint(new ChipPin(null, norInput2));
+        norInput2WireSegment.addEndpoint(new ChipPin(norTransistor2, TransistorTemplate.NPN_BASE));
+        norInput2Wire.addSegment(norInput2WireSegment);
+
+        Wire norDrivenLowWire = new Wire();
+        WireNode norDrivenLowWireNode = new WireNode(new WireVertex(7, 6));
+        WireSegment norDrivenLowWireSegment1 = new WireSegment(
+                new ChipPin(norDrivenLow, ConstantTemplate.OUTPUT),
+                norDrivenLowWireNode,
+                new WireVertex(5, 2), new WireVertex(7, 2), new WireVertex(7, 6)
+        );
+        WireSegment norDrivenLowWireSegment2 = new WireSegment(
+                norDrivenLowWireNode,
+                new ChipPin(norTransistor1, TransistorTemplate.NPN_COLLECTOR),
+                new WireVertex(7, 6), new WireVertex(9, 6)
+        );
+        WireSegment norDrivenLowWireSegment3 = new WireSegment(
+                norDrivenLowWireNode,
+                new ChipPin(norTransistor2, TransistorTemplate.NPN_COLLECTOR),
+                new WireVertex(7, 6), new WireVertex(7, 12), new WireVertex(9, 12)
+        );
+        norDrivenLowWire.addSegments(
+                norDrivenLowWireSegment1, norDrivenLowWireSegment2, norDrivenLowWireSegment3
+        );
+
+        Wire norPulledHighWire = new Wire();
+        WireNode norPulledHighWireT1Node = new WireNode(new WireVertex(17, 7));
+        WireNode norPulledHighWireOutputNode = new WireNode(new WireVertex(17, 10));
+        WireSegment norPulledHighWireSegment1 = new WireSegment(
+                new ChipPin(norPulledHigh, ConstantTemplate.OUTPUT),
+                norPulledHighWireT1Node,
+                new WireVertex(15, 2), new WireVertex(17, 2), new WireVertex(17, 7)
+        );
+        WireSegment norPulledHighWireSegment2 = new WireSegment(
+                norPulledHighWireT1Node,
+                new ChipPin(norTransistor1, TransistorTemplate.NPN_EMITTER),
+                new WireVertex(15, 7), new WireVertex(17, 7)
+        );
+        WireSegment norPulledHighWireSegment3 = new WireSegment(
+                norPulledHighWireT1Node,
+                norPulledHighWireOutputNode,
+                new WireVertex(17, 7), new WireVertex(17, 10)
+        );
+        WireSegment norPulledHighWireSegment4 = new WireSegment(
+                norPulledHighWireOutputNode,
+                new ChipPin(null, norOutput),
+                new WireVertex(17, 10), new WireVertex(20, 10)
+        );
+        WireSegment norPulledHighWireSegment5 = new WireSegment(
+                norPulledHighWireOutputNode,
+                new ChipPin(norTransistor2, TransistorTemplate.NPN_EMITTER),
+                new WireVertex(17, 10), new WireVertex(17, 13), new WireVertex(15, 13)
+        );
+        norPulledHighWire.addSegments(
+                norPulledHighWireSegment1, norPulledHighWireSegment2, norPulledHighWireSegment3,
+                norPulledHighWireSegment4, norPulledHighWireSegment5
+        );
+
+        norDesign.addPins(
+                norInput1, norInput2, norOutput
+        );
+        norDesign.addChips(
+                norTransistor1, norTransistor2,
+                norDrivenLow, norPulledHigh
+        );
+        norDesign.addWires(
+                norInput1Wire, norInput2Wire,
+                norDrivenLowWire, norPulledHighWire
+        );
+
+        ChipTemplate norTemplate = new DesignedTemplate(norDesign);
+        norTemplate.setId("nor");
+        norTemplate.setName("NOR");
+        norTemplate.setWidth(6);
+        norTemplate.setHeight(4);
+
+        // +----------------------+
+        // |    SR Latch Setup    |
+        // +----------------------+
+
+        Design srLatchDesign = new Design();
+        srLatchDesign.setWidth(15);
+        srLatchDesign.setHeight(13);
+
+        Pin srLatchReset = new Pin();
+        srLatchReset.setId("reset");
+        srLatchReset.setName("Reset");
+        srLatchReset.setChipX(0);
+        srLatchReset.setChipY(1);
+        srLatchReset.setDesignX(0);
+        srLatchReset.setDesignY(2);
+
+        Pin srLatchSet = new Pin();
+        srLatchSet.setId("set");
+        srLatchSet.setName("Set");
+        srLatchSet.setChipX(0);
+        srLatchSet.setChipY(3);
+        srLatchSet.setDesignX(0);
+        srLatchSet.setDesignY(11);
+
+        Pin srLatchOutput = new Pin();
+        srLatchOutput.setId("output");
+        srLatchOutput.setName("Output");
+        srLatchOutput.setChipX(6);
+        srLatchOutput.setChipY(1);
+        srLatchOutput.setDesignX(15);
+        srLatchOutput.setDesignY(3);
+
+        Pin srLatchInverseOutput = new Pin();
+        srLatchInverseOutput.setId("inverse_output");
+        srLatchInverseOutput.setName("Inverse Output");
+        srLatchInverseOutput.setChipX(6);
+        srLatchInverseOutput.setChipY(3);
+        srLatchInverseOutput.setDesignX(15);
+        srLatchInverseOutput.setDesignY(10);
+
+        Chip srLatchNor1 = new Chip();
+        srLatchNor1.setChipTemplate(norTemplate);
+        srLatchNor1.setX(4);
+        srLatchNor1.setY(1);
+
+        Chip srLatchNor2 = new Chip();
+        srLatchNor2.setChipTemplate(norTemplate);
+        srLatchNor2.setX(4);
+        srLatchNor2.setY(8);
+
+        Wire srLatchResetNor1Wire = new Wire();
+        WireSegment srLatchResetNor1WireSegment = new WireSegment(
+                new ChipPin(null, srLatchReset),
+                new ChipPin(srLatchNor1, norInput1),
+                new WireVertex(0, 2), new WireVertex(4, 2)
+        );
+        srLatchResetNor1Wire.addSegment(srLatchResetNor1WireSegment);
+
+        Wire srLatchSetNor2Wire = new Wire();
+        WireSegment srLatchSetNor2WireSegment = new WireSegment(
+                new ChipPin(null, srLatchSet),
+                new ChipPin(srLatchNor2, norInput2),
+                new WireVertex(0, 11), new WireVertex(4, 11)
+        );
+        srLatchSetNor2Wire.addSegment(srLatchSetNor2WireSegment);
+
+        Wire srLatchNor1OutputWire = new Wire();
+        WireNode srLatchNor1OutputWireNode = new WireNode(new WireVertex(12, 3));
+        WireSegment srLatchNor1OutputWireSegment1 = new WireSegment(
+                new ChipPin(srLatchNor1, norOutput),
+                srLatchNor1OutputWireNode,
+                new WireVertex(10, 3), new WireVertex(12, 3)
+        );
+        WireSegment srLatchNor1OutputWireSegment2 = new WireSegment(
+                srLatchNor1OutputWireNode,
+                new ChipPin(null, srLatchOutput),
+                new WireVertex(12, 3), new WireVertex(15, 3)
+        );
+        WireSegment srLatchNor1OutputWireSegment3 = new WireSegment(
+                srLatchNor1OutputWireNode,
+                new ChipPin(srLatchNor2, norInput1),
+                new WireVertex(12, 3), new WireVertex(12, 7), new WireVertex(2, 7), new WireVertex(2, 9), new WireVertex(4, 9)
+        );
+        srLatchNor1OutputWire.addSegments(
+                srLatchNor1OutputWireSegment1, srLatchNor1OutputWireSegment2, srLatchNor1OutputWireSegment3
+        );
+
+        Wire srLatchNor2OutputWire = new Wire();
+        WireNode srLatchNor2OutputWireNode = new WireNode(new WireVertex(13, 10));
+        WireSegment srLatchNor2OutputWireSegment1 = new WireSegment(
+                new ChipPin(srLatchNor2, norOutput),
+                srLatchNor2OutputWireNode,
+                new WireVertex(10, 10), new WireVertex(13, 10)
+        );
+        WireSegment srLatchNor2OutputWireSegment2 = new WireSegment(
+                srLatchNor2OutputWireNode,
+                new ChipPin(null, srLatchInverseOutput),
+                new WireVertex(13, 10), new WireVertex(15, 10)
+        );
+        WireSegment srLatchNor2OutputWireSegment3 = new WireSegment(
+                srLatchNor2OutputWireNode,
+                new ChipPin(srLatchNor1, norInput2),
+                new WireVertex(13, 10), new WireVertex(13, 6), new WireVertex(2, 6), new WireVertex(2, 4), new WireVertex(4, 4)
+        );
+        srLatchNor2OutputWire.addSegments(
+                srLatchNor2OutputWireSegment1, srLatchNor2OutputWireSegment2, srLatchNor2OutputWireSegment3
+        );
+
+        srLatchDesign.addPins(
+                srLatchReset, srLatchSet,
+                srLatchOutput, srLatchInverseOutput
+        );
+        srLatchDesign.addChips(
+                srLatchNor1, srLatchNor2
+        );
+        srLatchDesign.addWires(
+                srLatchResetNor1Wire, srLatchSetNor2Wire,
+                srLatchNor1OutputWire, srLatchNor2OutputWire
+        );
+
+        ChipTemplate srLatchTemplate = new DesignedTemplate(srLatchDesign);
+        srLatchTemplate.setId("sr_latch");
+        srLatchTemplate.setName("SR Latch");
+        srLatchTemplate.setWidth(6);
+        srLatchTemplate.setHeight(4);
+
+        // +----------------------+
+        // |   Test Design Setup  |
+        // +----------------------+
 
         Design testDesign = new Design();
-        testDesign.setWidth(28);
-        testDesign.setHeight(38);
+        testDesign.setWidth(19);
+        testDesign.setHeight(10);
 
-        Chip transistorRC2 = new Chip();
-        transistorRC2.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
-        transistorRC2.setX(10);
-        transistorRC2.setY(6);
-        Chip transistorRC1 = new Chip();
-        transistorRC1.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
-        transistorRC1.setX(10);
-        transistorRC1.setY(12);
+        Chip testToggleReset = new Chip();
+        testToggleReset.setChipTemplate(ToggleTemplate.getTemplate());
+        testToggleReset.setX(1);
+        testToggleReset.setY(1);
 
-        Chip transistorSC1 = new Chip();
-        transistorSC1.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
-        transistorSC1.setX(10);
-        transistorSC1.setY(22);
-        Chip transistorSC2 = new Chip();
-        transistorSC2.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
-        transistorSC2.setX(10);
-        transistorSC2.setY(28);
+        Chip testToggleSet = new Chip();
+        testToggleSet.setChipTemplate(ToggleTemplate.getTemplate());
+        testToggleSet.setX(1);
+        testToggleSet.setY(5);
 
-        Chip signalDriverR1 = new Chip();
-        signalDriverR1.setChipTemplate(ConstantTemplate.getDrivenLowTemplate());
-        signalDriverR1.setX(2);
-        signalDriverR1.setY(2);
-        Chip signalDriverS1 = new Chip();
-        signalDriverS1.setChipTemplate(ConstantTemplate.getDrivenLowTemplate());
-        signalDriverS1.setX(2);
-        signalDriverS1.setY(34);
+        Chip testSRLatch = new Chip();
+        testSRLatch.setChipTemplate(srLatchTemplate);
+        testSRLatch.setX(9);
+        testSRLatch.setY(3);
 
-        Chip pulledR2 = new Chip();
-        pulledR2.setChipTemplate(ConstantTemplate.getPulledHighTemplate());
-        pulledR2.setX(12);
-        pulledR2.setY(2);
-        Chip pulledS2 = new Chip();
-        pulledS2.setChipTemplate(ConstantTemplate.getPulledHighTemplate());
-        pulledS2.setX(12);
-        pulledS2.setY(34);
-
-        Chip toggleReset = new Chip();
-        toggleReset.setChipTemplate(ToggleTemplate.getTemplate());
-        toggleReset.setX(2);
-        toggleReset.setY(7);
-        Chip toggleSet = new Chip();
-        toggleSet.setChipTemplate(ToggleTemplate.getTemplate());
-        toggleSet.setX(2);
-        toggleSet.setY(29);
-
-        Chip toggleTest1 = new Chip();
-        toggleTest1.setChipTemplate(ToggleTemplate.getTemplate());
-        toggleTest1.setX(20);
-        toggleTest1.setY(13);
-        Chip toggleTest2 = new Chip();
-        toggleTest2.setChipTemplate(ToggleTemplate.getTemplate());
-        toggleTest2.setX(20);
-        toggleTest2.setY(23);
-
-        Wire wireReset = new Wire();
-        WireSegment wireResetSegment = new WireSegment(new WireVertex(6, 9), new WireVertex(10, 9));
-        wireResetSegment.addEndpoint(new ChipPin(toggleReset, ToggleTemplate.OUTPUT));
-        wireResetSegment.addEndpoint(new ChipPin(transistorRC2, TransistorTemplate.NPN_BASE));
-        wireReset.addSegment(wireResetSegment);
-
-        Wire wireSet = new Wire();
-        WireSegment wireSetSegment = new WireSegment(new WireVertex(6, 31), new WireVertex(10, 31));
-        wireSetSegment.addEndpoint(new ChipPin(toggleSet, ToggleTemplate.OUTPUT));
-        wireSetSegment.addEndpoint(new ChipPin(transistorSC2, TransistorTemplate.NPN_BASE));
-        wireSet.addSegment(wireSetSegment);
-
-        Wire driverResetSide = new Wire();
-        WireNode driverResetSideNode = new WireNode(new WireVertex(8, 7));
-        WireSegment driverResetDriverToNode = new WireSegment(new WireVertex(6, 3), new WireVertex(8, 3), new WireVertex(8, 7));
-        driverResetDriverToNode.addEndpoint(new ChipPin(signalDriverR1, ConstantTemplate.OUTPUT));
-        driverResetDriverToNode.addEndpoint(driverResetSideNode);
-        WireSegment driverResetNodeToRC2C = new WireSegment(new WireVertex(8, 7), new WireVertex(10, 7));
-        driverResetNodeToRC2C.addEndpoint(driverResetSideNode);
-        driverResetNodeToRC2C.addEndpoint(new ChipPin(transistorRC2, TransistorTemplate.NPN_COLLECTOR));
-        WireSegment driverResetNodeToRC1C = new WireSegment(new WireVertex(8, 7), new WireVertex(8, 13), new WireVertex(10, 13));
-        driverResetNodeToRC1C.addEndpoint(driverResetSideNode);
-        driverResetNodeToRC1C.addEndpoint(new ChipPin(transistorRC1, TransistorTemplate.NPN_COLLECTOR));
-        driverResetSide.getNodes().add(driverResetSideNode);
-        driverResetSide.addSegments(
-                driverResetDriverToNode, driverResetNodeToRC2C, driverResetNodeToRC1C
+        Wire testResetWire = new Wire();
+        WireSegment testResetWireSegment = new WireSegment(
+                new ChipPin(testToggleReset, ToggleTemplate.OUTPUT),
+                new ChipPin(testSRLatch, srLatchReset),
+                new WireVertex(5, 3), new WireVertex(7, 3), new WireVertex(7, 4), new WireVertex(9, 4)
         );
+        testResetWire.addSegment(testResetWireSegment);
 
-        Wire driverSetSide = new Wire();
-        WireNode driverSetSideNode = new WireNode(new WireVertex(8, 29));
-        WireSegment driverSetDriverToNode = new WireSegment(new WireVertex(6, 35), new WireVertex(8, 35), new WireVertex(8, 29));
-        driverSetDriverToNode.addEndpoint(new ChipPin(signalDriverS1, ConstantTemplate.OUTPUT));
-        driverSetDriverToNode.addEndpoint(driverSetSideNode);
-        WireSegment driverSetNodeToSC2C = new WireSegment(new WireVertex(8, 29), new WireVertex(10, 29));
-        driverSetNodeToSC2C.addEndpoint(driverSetSideNode);
-        driverSetNodeToSC2C.addEndpoint(new ChipPin(transistorSC2, TransistorTemplate.NPN_COLLECTOR));
-        WireSegment driverSetNodeToSC1C = new WireSegment(new WireVertex(8, 29), new WireVertex(8, 23), new WireVertex(10, 23));
-        driverSetNodeToSC1C.addEndpoint(driverSetSideNode);
-        driverSetNodeToSC1C.addEndpoint(new ChipPin(transistorSC1, TransistorTemplate.NPN_COLLECTOR));
-        driverSetSide.getNodes().add(driverSetSideNode);
-        driverSetSide.addSegments(
-                driverSetDriverToNode, driverSetNodeToSC2C, driverSetNodeToSC1C
+        Wire testSetWire = new Wire();
+        WireSegment testSetWireSegment = new WireSegment(
+                new ChipPin(testToggleSet, ToggleTemplate.OUTPUT),
+                new ChipPin(testSRLatch, srLatchSet),
+                new WireVertex(5, 7), new WireVertex(7, 7), new WireVertex(7, 6), new WireVertex(9, 6)
         );
+        testSetWire.addSegment(testSetWireSegment);
 
-        Wire outputResetSide = new Wire();
-        WireNode outputResetSideRC2 = new WireNode(new WireVertex(18, 8));
-        WireNode outputResetSideRC1 = new WireNode(new WireVertex(18, 14));
-        WireSegment outputResetPullerToNodeRC2 = new WireSegment(new WireVertex(16, 3), new WireVertex(18, 3), new WireVertex(18, 8));
-        outputResetPullerToNodeRC2.addEndpoint(new ChipPin(pulledR2, ConstantTemplate.OUTPUT));
-        outputResetPullerToNodeRC2.addEndpoint(outputResetSideRC2);
-        WireSegment outputResetNodeToRC2 = new WireSegment(new WireVertex(18, 8), new WireVertex(16, 8));
-        outputResetNodeToRC2.addEndpoint(outputResetSideRC2);
-        outputResetNodeToRC2.addEndpoint(new ChipPin(transistorRC2, TransistorTemplate.NPN_EMITTER));
-        WireSegment outputResetNodeToNode = new WireSegment(new WireVertex(18, 8), new WireVertex(18, 14));
-        outputResetNodeToNode.addEndpoint(outputResetSideRC2);
-        outputResetNodeToNode.addEndpoint(outputResetSideRC1);
-        WireSegment outputResetNodeToRC1 = new WireSegment(new WireVertex(18, 14), new WireVertex(16, 14));
-        outputResetNodeToRC1.addEndpoint(outputResetSideRC1);
-        outputResetNodeToRC1.addEndpoint(new ChipPin(transistorRC1, TransistorTemplate.NPN_EMITTER));
-        WireSegment outputResetNodeToSC1 = new WireSegment(new WireVertex(18, 14), new WireVertex(18, 18), new WireVertex(6, 18), new WireVertex(6, 25), new WireVertex(10, 25));
-        outputResetNodeToSC1.addEndpoint(outputResetSideRC1);
-        outputResetNodeToSC1.addEndpoint(new ChipPin(transistorSC1, TransistorTemplate.NPN_BASE));
-        outputResetSide.getNodes().addAll(List.of(outputResetSideRC2, outputResetSideRC1));
-        outputResetSide.addSegments(
-                outputResetPullerToNodeRC2, outputResetNodeToRC2, outputResetNodeToNode, outputResetNodeToRC1, outputResetNodeToSC1
+        testDesign.addChips(
+                testToggleReset, testToggleSet, testSRLatch
         );
-
-        Wire outputSetSide = new Wire();
-        WireNode outputSetSideSC2 = new WireNode(new WireVertex(18, 30));
-        WireNode outputSetSideSC1 = new WireNode(new WireVertex(18, 24));
-        WireSegment outputSetPullerToNodeSC2 = new WireSegment(new WireVertex(16, 35), new WireVertex(18, 35), new WireVertex(18, 24));
-        outputSetPullerToNodeSC2.addEndpoint(new ChipPin(pulledS2, ConstantTemplate.OUTPUT));
-        outputSetPullerToNodeSC2.addEndpoint(outputSetSideSC2);
-        WireSegment outputSetNodeToSC2 = new WireSegment(new WireVertex(18, 30), new WireVertex(16, 30));
-        outputSetNodeToSC2.addEndpoint(outputSetSideSC2);
-        outputSetNodeToSC2.addEndpoint(new ChipPin(transistorSC2, TransistorTemplate.NPN_EMITTER));
-        WireSegment outputSetNodeToNode = new WireSegment(new WireVertex(18, 30), new WireVertex(18, 24));
-        outputSetNodeToNode.addEndpoint(outputSetSideSC2);
-        outputSetNodeToNode.addEndpoint(outputSetSideSC1);
-        WireSegment outputSetNodeToSC1 = new WireSegment(new WireVertex(18, 24), new WireVertex(16, 24));
-        outputSetNodeToSC1.addEndpoint(outputSetSideSC1);
-        outputSetNodeToSC1.addEndpoint(new ChipPin(transistorSC1, TransistorTemplate.NPN_EMITTER));
-        WireSegment outputSetNodeToRC1 = new WireSegment(new WireVertex(18, 24), new WireVertex(18, 20), new WireVertex(7, 20), new WireVertex(7, 15), new WireVertex(10, 15));
-        outputSetNodeToRC1.addEndpoint(outputSetSideSC1);
-        outputSetNodeToRC1.addEndpoint(new ChipPin(transistorRC1, TransistorTemplate.NPN_BASE));
-        outputSetSide.getNodes().addAll(List.of(outputSetSideSC2, outputSetSideSC1));
-        outputSetSide.addSegments(
-                outputSetPullerToNodeSC2, outputSetNodeToSC2, outputSetNodeToNode, outputSetNodeToSC1, outputSetNodeToRC1
-        );
-
-        Wire toggleTestWire = new Wire();
-        WireSegment toggleTestWireSegment = new WireSegment(new WireVertex(24, 15), new WireVertex(26, 15), new WireVertex(26, 25), new WireVertex(24, 25));
-        toggleTestWireSegment.addEndpoint(new ChipPin(toggleTest1, ToggleTemplate.OUTPUT));
-        toggleTestWireSegment.addEndpoint(new ChipPin(toggleTest2, ToggleTemplate.OUTPUT));
-        toggleTestWire.addSegment(toggleTestWireSegment);
-
-
-
-
-
-        testDesign.addChips(Arrays.asList(
-                transistorRC2, transistorRC1, transistorSC1, transistorSC2,
-                signalDriverR1, signalDriverS1, pulledR2, pulledS2,
-                toggleReset, toggleSet,
-                toggleTest1, toggleTest2
-        ));
         testDesign.addWires(
-                wireReset, wireSet, driverResetSide, driverSetSide,
-                outputResetSide, outputSetSide, toggleTestWire
+                testResetWire, testSetWire
         );
+
+
+
+
 
         Simulation.setSimulator(new MeshSimulator());
         Simulation.start();
         SimulatedDesign simulatedDesign = Simulation.initialize(testDesign);
-
-//        MeshVertex vertexInR = new MeshVertex();
-//        MeshVertex vertexInS = new MeshVertex();
-//        MeshVertex vertexR1 = new MeshVertex();
-//        MeshVertex vertexS1 = new MeshVertex();
-//        MeshVertex vertexR2 = new MeshVertex();
-//        MeshVertex vertexS2 = new MeshVertex();
-//
-//        MeshConnector connectorRC1 = new MeshConnector(vertexS2, false);
-//        MeshEdge edgeRC1 = new MeshEdge(vertexR2, connectorRC1);
-//        MeshConnector connectorRC2 = new MeshConnector(vertexInR, false);
-//        MeshEdge edgeRC2 = new MeshEdge(vertexR2, connectorRC2);
-//        vertexR1.setOutgoingEdges(Set.of(edgeRC1, edgeRC2));
-//
-//        MeshConnector connectorSC1 = new MeshConnector(vertexR2, false);
-//        MeshEdge edgeSC1 = new MeshEdge(vertexS2, connectorSC1);
-//        MeshConnector connectorSC2 = new MeshConnector(vertexInS, false);
-//        MeshEdge edgeSC2 = new MeshEdge(vertexS2, connectorSC2);
-//        vertexS1.setOutgoingEdges(Set.of(edgeSC1, edgeSC2));
-//
-//        resetDriver = new MeshDriver(vertexInR, LogicState.LOW, LogicState.UNKNOWN);
-//        setDriver = new MeshDriver(vertexInS, LogicState.LOW, LogicState.UNKNOWN);
-//        MeshDriver driverR1 = new MeshDriver(vertexR1, LogicState.LOW, LogicState.UNKNOWN);
-//        MeshDriver driverS1 = new MeshDriver(vertexS1, LogicState.LOW, LogicState.UNKNOWN);
-//        MeshDriver driverRD = new MeshDriver(vertexR2, LogicState.UNKNOWN, LogicState.HIGH);
-//        MeshDriver driverSD = new MeshDriver(vertexS2, LogicState.UNKNOWN, LogicState.HIGH);
-//
-//        coordinator = new MeshSimulationCoordinator();
-//        coordinator.start(new MeshDriver[] {
-//                resetDriver,
-//                setDriver,
-//                driverR1,
-//                driverS1,
-//                driverRD,
-//                driverSD
-//        }, new MeshVertex[] {
-//                vertexInR,
-//                vertexInS,
-//                vertexR1,
-//                vertexR2,
-//                vertexS1,
-//                vertexS2
-//        }, new MeshConnector[] {
-//                connectorRC1,
-//                connectorRC2,
-//                connectorSC1,
-//                connectorSC2
-//        });
-//
-//        simulatedDesign = new MeshSimulatedDesign();
-//
-//        simulatedDesign.pinMapping.put(reset, vertexInR);
-//        simulatedDesign.pinMapping.put(set, vertexInS);
-//        simulatedDesign.wireMapping.put(resetRC1B, vertexInR);
-//        simulatedDesign.wireMapping.put(setSC1B, vertexInS);
-//
-//        simulatedDesign.wireMapping.put(pulledR2RC2E, vertexR2);
-//        simulatedDesign.wireMapping.put(pulledR2RC1E, vertexR2);
-//        simulatedDesign.wireMapping.put(pulledR2SC1B, vertexR2);
-//
-//        simulatedDesign.wireMapping.put(pulledS2RC1B, vertexS2);
-//        simulatedDesign.wireMapping.put(pulledS2SC1E, vertexS2);
-//        simulatedDesign.wireMapping.put(pulledS2SC2E, vertexS2);
-//
-//        simulatedDesign.wireMapping.put(driverR1RC2C, vertexR1);
-//        simulatedDesign.wireMapping.put(driverR1RC1C, vertexR1);
-//
-//        simulatedDesign.wireMapping.put(driverS1SC1C, vertexS1);
-//        simulatedDesign.wireMapping.put(driverS1SC2C, vertexS1);
-//
-//        MeshSimulatedDesign driverR1SD = new MeshSimulatedDesign();
-//        driverR1SD.pinMapping.put(SignalSourceTemplate.OUTPUT, vertexR1);
-//        simulatedDesign.chipMapping.put(signalDriverR1, driverR1SD);
-//
-//        MeshSimulatedDesign driverS1SD = new MeshSimulatedDesign();
-//        driverS1SD.pinMapping.put(SignalSourceTemplate.OUTPUT, vertexS1);
-//        simulatedDesign.chipMapping.put(signalDriverS1, driverS1SD);
-//
-//        MeshSimulatedDesign pulledR2SD = new MeshSimulatedDesign();
-//        pulledR2SD.pinMapping.put(SignalSourceTemplate.OUTPUT, vertexR2);
-//        simulatedDesign.chipMapping.put(pulledR2, pulledR2SD);
-//
-//        MeshSimulatedDesign pulledS2SD = new MeshSimulatedDesign();
-//        pulledS2SD.pinMapping.put(SignalSourceTemplate.OUTPUT, vertexS2);
-//        simulatedDesign.chipMapping.put(pulledS2, pulledS2SD);
-//
-//        MeshSimulatedDesign transistorRC2SD = new MeshSimulatedDesign();
-//        transistorRC2SD.pinMapping.put(TransistorTemplate.NPN_COLLECTOR, vertexR1);
-//        transistorRC2SD.pinMapping.put(TransistorTemplate.NPN_BASE, vertexInR);
-//        transistorRC2SD.pinMapping.put(TransistorTemplate.NPN_EMITTER, vertexR2);
-//        simulatedDesign.chipMapping.put(transistorRC2, transistorRC2SD);
-//
-//        MeshSimulatedDesign transistorRC1SD = new MeshSimulatedDesign();
-//        transistorRC1SD.pinMapping.put(TransistorTemplate.NPN_COLLECTOR, vertexR1);
-//        transistorRC1SD.pinMapping.put(TransistorTemplate.NPN_BASE, vertexS2);
-//        transistorRC1SD.pinMapping.put(TransistorTemplate.NPN_EMITTER, vertexR2);
-//        simulatedDesign.chipMapping.put(transistorRC1, transistorRC1SD);
-//
-//        MeshSimulatedDesign transistorSC1SD = new MeshSimulatedDesign();
-//        transistorSC1SD.pinMapping.put(TransistorTemplate.NPN_COLLECTOR, vertexS1);
-//        transistorSC1SD.pinMapping.put(TransistorTemplate.NPN_BASE, vertexR2);
-//        transistorSC1SD.pinMapping.put(TransistorTemplate.NPN_EMITTER, vertexS2);
-//        simulatedDesign.chipMapping.put(transistorSC1, transistorSC1SD);
-//
-//        MeshSimulatedDesign transistorSC2SD = new MeshSimulatedDesign();
-//        transistorSC2SD.pinMapping.put(TransistorTemplate.NPN_COLLECTOR, vertexS1);
-//        transistorSC2SD.pinMapping.put(TransistorTemplate.NPN_BASE, vertexInS);
-//        transistorSC2SD.pinMapping.put(TransistorTemplate.NPN_EMITTER, vertexS2);
-//        simulatedDesign.chipMapping.put(transistorSC2, transistorSC2SD);
-
-        System.out.println("Transistors: " + testDesign.getTransistorCount());
 
         UIToolbar toolbar = new UIToolbar(Direction.HORIZONTAL);
         toolbar.add(new UIButton("T1", () -> {}));
@@ -589,19 +382,23 @@ public class BreadboardWindow {
         UIText text = new UIText("Status: Testing");
         bottomToolbar.add(text);
 
-        UIFloatingContainer floatingContainer = new UIFloatingContainer();
+        //UIFloatingContainer floatingContainer = new UIFloatingContainer();
         //floatingContainer.addComponent(new UITextField("Search components...", (s) -> {}), Anchor.TOP_LEFT, new Padding(10));
-        floatingContainer.setBackgroundComponent(new DesignEditor(testDesign, simulatedDesign));
+        UIFlexContainer renderFlexContainer = new UIFlexContainer(Direction.VERTICAL);
+        renderFlexContainer.addComponent(new UIBorder(new DesignEditor(testDesign, simulatedDesign), 2), 1);
+        renderFlexContainer.addComponent(new UIBorder(new DesignEditor(srLatchDesign, simulatedDesign.getSimulatedChipDesign(testSRLatch)), 2), 1);
+        renderFlexContainer.addComponent(new UIBorder(new DesignEditor(norDesign, simulatedDesign.getSimulatedChipDesign(testSRLatch).getSimulatedChipDesign(srLatchNor1)), 2), 1);
+        renderFlexContainer.addComponent(new UIBorder(new DesignEditor(norDesign, simulatedDesign.getSimulatedChipDesign(testSRLatch).getSimulatedChipDesign(srLatchNor2)), 2), 1);
 
         UIFlexContainer testFlexContainer = new UIFlexContainer(Direction.VERTICAL);
         for (int i = 0; i < 4; i++)
             testFlexContainer.addComponent(new UITextField(Integer.toString(i), (s) -> {}), 0f);
 
-        UIScroll scroll = new UIScroll(floatingContainer);
+        //UIScroll scroll = new UIScroll(re);
 
         UIFlexContainer innerFlexContainer = new UIFlexContainer(Direction.VERTICAL);
         innerFlexContainer.addComponent(new UIBorder(toolbar, UIBorder.BorderLayout.BOTTOM), 0f);
-        innerFlexContainer.addComponent(floatingContainer, 1f);
+        innerFlexContainer.addComponent(renderFlexContainer, 1f);
 //        innerFlexContainer.addComponent(new DesignRenderer(nandDesign, null), 0.5f);
 //        innerFlexContainer.addComponent(new DesignRenderer(nandDesign, nand2DesignInstance), 0f);
         innerFlexContainer.addComponent(new UIBorder(bottomToolbar, UIBorder.BorderLayout.TOP), 0f);

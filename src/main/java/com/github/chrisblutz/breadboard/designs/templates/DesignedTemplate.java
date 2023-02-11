@@ -11,6 +11,10 @@ public class DesignedTemplate extends ChipTemplate {
 
     public Design design;
 
+    public DesignedTemplate(Design design) {
+        this.design = design;
+    }
+
     public Design getDesign() {
         return design;
     }
