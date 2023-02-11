@@ -63,17 +63,10 @@ public class MeshGenerator {
         for (Pin pin : pins)
             simulatedDesign.getPinMapping().put(pin, pinVertices.get(new ChipPin(chip, pin)));
 
-        // If this is a simulated chip, create the mesh chip for the chip and get the associated drivers
-        if (chip != null && chip.getChipTemplate() instanceof SimulatedTemplate<?> chipTemplate) {
-            MeshChip<?> meshChip = simulatedDesign.generateMeshChip(chip, chipTemplate);
-            // Register new mesh chip and all associated mesh drivers
-            simulationConfig.getMeshChips().add(meshChip);
-        }
-
         // If the design is null, this is a built-in chip, so process the chip to determine if it provides
-        // drivers or connectors.  Then return and skip the rest of the generation.
+        // chips or connectors.  Then return and skip the rest of the generation.
         if (design == null) {
-            generateFromBuiltinChip(simulationConfig, pinVertices, chip);
+            generateFromBuiltinChip(simulatedDesign, simulationConfig, pinVertices, chip);
             return simulatedDesign;
         }
 
@@ -99,8 +92,9 @@ public class MeshGenerator {
         return simulatedDesign;
     }
 
-    private static void generateFromBuiltinChip(MeshSimulationConfig simulationConfig, Map<ChipPin, MeshVertex> pinVertices, Chip chip) {
+    private static void generateFromBuiltinChip(MeshSimulatedDesign simulatedDesign, MeshSimulationConfig simulationConfig, Map<ChipPin, MeshVertex> pinVertices, Chip chip) {
         // If the chip has a transistor template, create a mesh connector and edge for it
+        // If the chip has a simulated template, create the mesh chip for the chip and get the associated drivers
         if (chip.getChipTemplate() instanceof TransistorTemplate template) {
             // Get the base mesh vertex for the chip
             MeshVertex baseVertex = pinVertices.get(new ChipPin(chip, template.getBase()));
@@ -114,6 +108,10 @@ public class MeshGenerator {
             startVertex.getOutgoingEdges().add(edge);
             // Add connector to the simulation configuration
             simulationConfig.getMeshConnectors().add(connector);
+        } else if (chip.getChipTemplate() instanceof SimulatedTemplate<?> chipTemplate) {
+            MeshChip<?> meshChip = simulatedDesign.generateMeshChip(chip, chipTemplate);
+            // Register new mesh chip and all associated mesh drivers
+            simulationConfig.getMeshChips().add(meshChip);
         }
     }
 }
