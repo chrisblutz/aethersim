@@ -2,7 +2,7 @@ package com.github.chrisblutz.breadboard.designs;
 
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
-import com.github.chrisblutz.breadboard.utils.Vertex;
+import com.github.chrisblutz.breadboard.designs.wires.WireVertex;
 
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +12,7 @@ public class Wire implements BreadboardSavable {
     private Pin startPin = null, endPin = null;
     private Chip startChip = null, endChip = null; // "null" indicates an internal node (i.e. a design input/output)
 
-    private Vertex[] vertices;
+    private WireVertex[] vertices;
 
     public void setStartPin(Pin startPin) {
         setStartPin(null, startPin);
@@ -48,11 +48,11 @@ public class Wire implements BreadboardSavable {
         return endChip;
     }
 
-    public Vertex[] getVertices() {
+    public WireVertex[] getVertices() {
         return vertices;
     }
 
-    public void setVertices(Vertex[] vertices) {
+    public void setVertices(WireVertex[] vertices) {
         this.vertices = vertices;
     }
 

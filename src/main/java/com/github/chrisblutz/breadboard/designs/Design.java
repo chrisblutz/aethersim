@@ -18,8 +18,10 @@ public class Design implements BreadboardSavable {
     private final List<Pin> pins = new ArrayList<>();
     private final List<Chip> chips = new ArrayList<>();
     private final List<Wire> wires = new ArrayList<>();
+    private final List<WireProto> wireProtos = new ArrayList<>();
 
     private final Map<DesignPin, Set<Wire>> pinWireConnections = new HashMap<>();
+    private final Map<ChipPin, Set<WireProto>> pinWireProtoConnections = new HashMap<>();
 
     private int transistorCount = 0;
 
@@ -93,6 +95,10 @@ public class Design implements BreadboardSavable {
         return wires;
     }
 
+    public List<WireProto> getWireProtos() {
+        return wireProtos;
+    }
+
     public void addWire(Wire wire) {
         wires.add(wire);
 
@@ -108,8 +114,24 @@ public class Design implements BreadboardSavable {
         pinWireConnections.get(endPin).add(wire);
     }
 
+    public void addWire(WireProto wire) {
+        wireProtos.add(wire);
+
+        // Update pin connections
+        for (ChipPin pin : wire.getConnectedPins()) {
+            if (!pinWireProtoConnections.containsKey(pin))
+                pinWireProtoConnections.put(pin, new LinkedHashSet<>());
+            pinWireProtoConnections.get(pin).add(wire);
+        }
+    }
+
     public void addWires(Collection<Wire> wires) {
         for (Wire wire : wires)
+            addWire(wire);
+    }
+
+    public void addWires(WireProto... wires) {
+        for (WireProto wire : wires)
             addWire(wire);
     }
 
@@ -124,13 +146,31 @@ public class Design implements BreadboardSavable {
         pinWireConnections.get(endPin).remove(wire);
     }
 
+    public void removeWire(WireProto wire) {
+        wireProtos.remove(wire);
+
+        // Remove wire from pin connections
+        for (ChipPin pin : wire.getConnectedPins())
+            if (pinWireProtoConnections.containsKey(pin))
+                pinWireProtoConnections.get(pin).remove(wire);
+    }
+
     public void removeWires(Collection<Wire> wires) {
         for (Wire wire : wires)
             removeWire(wire);
     }
 
+    public void removeWires(WireProto... wires) {
+        for (WireProto wire : wires)
+            removeWire(wire);
+    }
+
     public Set<Wire> getWiresConnectedToPin(Chip chip, Pin pin) {
         return pinWireConnections.getOrDefault(new DesignPin(chip, pin), new HashSet<>());
+    }
+
+    public Set<WireProto> getWireProtosConnectedToPin(ChipPin pin) {
+        return pinWireProtoConnections.getOrDefault(pin, new HashSet<>());
     }
 
     @Override
