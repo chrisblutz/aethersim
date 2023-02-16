@@ -10,20 +10,20 @@ public class VertexStatistics {
     private int minimumX = Integer.MAX_VALUE, maximumX = Integer.MIN_VALUE;
     private int minimumY = Integer.MAX_VALUE, maximumY = Integer.MIN_VALUE;
 
-    private Function<Vertex, Boolean> xProcessor;
-    private Function<Vertex, Boolean> yProcessor;
+    private Function<Vertex, Boolean> xDecider;
+    private Function<Vertex, Boolean> yDecider;
 
     public VertexStatistics() {
         this(null, null);
     }
 
-    public VertexStatistics(Function<Vertex, Boolean> processor) {
-        this(processor, processor);
+    public VertexStatistics(Function<Vertex, Boolean> decider) {
+        this(decider, decider);
     }
 
-    public VertexStatistics(Function<Vertex, Boolean> xProcessor, Function<Vertex, Boolean> yProcessor) {
-        this.xProcessor = xProcessor;
-        this.yProcessor = yProcessor;
+    public VertexStatistics(Function<Vertex, Boolean> xDecider, Function<Vertex, Boolean> yDecider) {
+        this.xDecider = xDecider;
+        this.yDecider = yDecider;
     }
 
     public int getMinimumX() {
@@ -43,11 +43,11 @@ public class VertexStatistics {
     }
 
     protected void accept(Vertex vertex) {
-        if (xProcessor == null || xProcessor.apply(vertex)) {
+        if (xDecider == null || xDecider.apply(vertex)) {
             minimumX = Math.min(minimumX, vertex.getX());
             maximumX = Math.max(maximumX, vertex.getX());
         }
-        if (yProcessor == null || yProcessor.apply(vertex)) {
+        if (yDecider == null || yDecider.apply(vertex)) {
             minimumY = Math.min(minimumY, vertex.getY());
             maximumY = Math.max(maximumY, vertex.getY());
         }
@@ -74,18 +74,18 @@ public class VertexStatistics {
         );
     }
 
-    public static Collector<Vertex, VertexStatistics, VertexStatistics> collector(final Function<Vertex, Boolean> processor) {
+    public static Collector<Vertex, VertexStatistics, VertexStatistics> collector(final Function<Vertex, Boolean> decider) {
         return Collector.of(
-                () -> new VertexStatistics(processor),
+                () -> new VertexStatistics(decider),
                 VertexStatistics::accept,
                 VertexStatistics::combine,
                 Collector.Characteristics.IDENTITY_FINISH
         );
     }
 
-    public static Collector<Vertex, VertexStatistics, VertexStatistics> collector(final Function<Vertex, Boolean> xProcessor, final Function<Vertex, Boolean> yProcessor) {
+    public static Collector<Vertex, VertexStatistics, VertexStatistics> collector(final Function<Vertex, Boolean> xDecider, final Function<Vertex, Boolean> yDecider) {
         return Collector.of(
-                () -> new VertexStatistics(xProcessor, yProcessor),
+                () -> new VertexStatistics(xDecider, yDecider),
                 VertexStatistics::accept,
                 VertexStatistics::combine,
                 Collector.Characteristics.IDENTITY_FINISH
