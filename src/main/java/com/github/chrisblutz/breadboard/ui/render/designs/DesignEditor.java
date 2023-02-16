@@ -455,8 +455,8 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         int designWidth = (int) (design.getWidth() * zoom);
         int designHeight = (int) (design.getHeight() * zoom);
         if (pressedLeftDesignEdge) {
-            int gridSquareToAdd = Math.max(
-                    (int) Math.round((double) (designBorderX - mouseX) / zoom),
+            int gridSquareToAdd = -Math.min(
+                    (int) -Math.round((double) (designBorderX - mouseX) / zoom),
                     design.getOpenDistance(Direction.LEFT)
             );
             renderedDesignOffsetX = -gridSquareToAdd;
@@ -468,8 +468,8 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             );
         }
         if (pressedTopDesignEdge) {
-            int gridSquareToAdd = Math.max(
-                    (int) Math.round((double) (designBorderY - mouseY) / zoom),
+            int gridSquareToAdd = -Math.min(
+                    (int) -Math.round((double) (designBorderY - mouseY) / zoom),
                     design.getOpenDistance(Direction.UP)
             );
             renderedDesignOffsetY = -gridSquareToAdd;

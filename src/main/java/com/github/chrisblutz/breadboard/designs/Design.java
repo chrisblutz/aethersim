@@ -200,7 +200,10 @@ public class Design implements BreadboardSavable {
         // For each component, calculate the necessary maximums and minimums
         VertexStatistics pinStatistics = pins.stream()
                 .map(Pin::getDesignLocation)
-                .collect(VertexStatistics.collector());
+                .collect(VertexStatistics.collector(
+                        vertex -> vertex.getX() > 0 && vertex.getX() < getWidth(),
+                        vertex -> vertex.getY() > 0 && vertex.getY() < getHeight()
+                ));
         // For the chips, enforce a one-square boundary to each edge, so add/remove one where necessary
         VertexStatistics chipStatistics = chips.stream()
                 .map(chip -> new Vertex[] {

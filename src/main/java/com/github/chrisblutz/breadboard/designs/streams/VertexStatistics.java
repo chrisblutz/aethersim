@@ -2,12 +2,29 @@ package com.github.chrisblutz.breadboard.designs.streams;
 
 import com.github.chrisblutz.breadboard.designs.Vertex;
 
+import java.util.function.Function;
 import java.util.stream.Collector;
 
 public class VertexStatistics {
 
     private int minimumX = Integer.MAX_VALUE, maximumX = Integer.MIN_VALUE;
     private int minimumY = Integer.MAX_VALUE, maximumY = Integer.MIN_VALUE;
+
+    private Function<Vertex, Boolean> xProcessor;
+    private Function<Vertex, Boolean> yProcessor;
+
+    public VertexStatistics() {
+        this(null, null);
+    }
+
+    public VertexStatistics(Function<Vertex, Boolean> processor) {
+        this(processor, processor);
+    }
+
+    public VertexStatistics(Function<Vertex, Boolean> xProcessor, Function<Vertex, Boolean> yProcessor) {
+        this.xProcessor = xProcessor;
+        this.yProcessor = yProcessor;
+    }
 
     public int getMinimumX() {
         return minimumX;
@@ -26,10 +43,14 @@ public class VertexStatistics {
     }
 
     protected void accept(Vertex vertex) {
-        minimumX = Math.min(minimumX, vertex.getX());
-        maximumX = Math.max(maximumX, vertex.getX());
-        minimumY = Math.min(minimumY, vertex.getY());
-        maximumY = Math.max(maximumY, vertex.getY());
+        if (xProcessor == null || xProcessor.apply(vertex)) {
+            minimumX = Math.min(minimumX, vertex.getX());
+            maximumX = Math.max(maximumX, vertex.getX());
+        }
+        if (yProcessor == null || yProcessor.apply(vertex)) {
+            minimumY = Math.min(minimumY, vertex.getY());
+            maximumY = Math.max(maximumY, vertex.getY());
+        }
     }
 
     public VertexStatistics combine(VertexStatistics... others) {
@@ -47,6 +68,24 @@ public class VertexStatistics {
     public static Collector<Vertex, VertexStatistics, VertexStatistics> collector() {
         return Collector.of(
                 VertexStatistics::new,
+                VertexStatistics::accept,
+                VertexStatistics::combine,
+                Collector.Characteristics.IDENTITY_FINISH
+        );
+    }
+
+    public static Collector<Vertex, VertexStatistics, VertexStatistics> collector(final Function<Vertex, Boolean> processor) {
+        return Collector.of(
+                () -> new VertexStatistics(processor),
+                VertexStatistics::accept,
+                VertexStatistics::combine,
+                Collector.Characteristics.IDENTITY_FINISH
+        );
+    }
+
+    public static Collector<Vertex, VertexStatistics, VertexStatistics> collector(final Function<Vertex, Boolean> xProcessor, final Function<Vertex, Boolean> yProcessor) {
+        return Collector.of(
+                () -> new VertexStatistics(xProcessor, yProcessor),
                 VertexStatistics::accept,
                 VertexStatistics::combine,
                 Collector.Characteristics.IDENTITY_FINISH
