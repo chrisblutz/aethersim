@@ -8,25 +8,16 @@ import java.util.Map;
 
 public class Chip implements BreadboardSavable {
 
-    private int x;
-    private int y;
+    private Vertex location;
 
     private ChipTemplate chipTemplate;
 
-    public int getX() {
-        return x;
+    public Vertex getLocation() {
+        return location;
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
+    public void setLocation(Vertex location) {
+        this.location = location;
     }
 
     public ChipTemplate getChipTemplate() {

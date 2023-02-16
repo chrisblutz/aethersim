@@ -5,7 +5,7 @@ import com.github.chrisblutz.breadboard.designs.wires.WireNode;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
-import com.github.chrisblutz.breadboard.designs.wires.WireVertex;
+import com.github.chrisblutz.breadboard.designs.Vertex;
 
 import java.awt.geom.Path2D;
 import java.util.LinkedHashMap;
@@ -52,8 +52,8 @@ public class DesignRenderer {
 
     public Ellipse getNewPinShape(Chip chip, Pin pin, int x, int y) {
         // Calculate pin X/Y based on whether it's attached to a chip
-        double pinX = (chip == null ? pin.getDesignX() : x + pin.getChipX());
-        double pinY = (chip == null ? pin.getDesignY() : y + pin.getChipY());
+        double pinX = (chip == null ? pin.getDesignLocation().getX() : x + pin.getChipLocation().getX());
+        double pinY = (chip == null ? pin.getDesignLocation().getY() : y + pin.getChipLocation().getY());
         // Create the shape
         Ellipse pinShape = new Ellipse(
                 (pinX - PIN_RADIUS),
@@ -112,8 +112,8 @@ public class DesignRenderer {
 
     private void generateChipShape(Chip chip) {
         RoundRectangle chipShape = new RoundRectangle(
-                chip.getX(),
-                chip.getY(),
+                chip.getLocation().getX(),
+                chip.getLocation().getY(),
                 chip.getChipTemplate().getWidth(),
                 chip.getChipTemplate().getHeight(),
                 0.75,
@@ -124,8 +124,8 @@ public class DesignRenderer {
 
     private void generatePinShape(Chip chip, Pin pin) {
         // Calculate pin X/Y based on whether it's attached to a chip
-        double pinX = (chip == null ? pin.getDesignX() : chip.getX() + pin.getChipX());
-        double pinY = (chip == null ? pin.getDesignY() : chip.getY() + pin.getChipY());
+        double pinX = (chip == null ? pin.getDesignLocation().getX() : chip.getLocation().getX() + pin.getChipLocation().getX());
+        double pinY = (chip == null ? pin.getDesignLocation().getY() : chip.getLocation().getY() + pin.getChipLocation().getY());
         // Create the shape
         Ellipse pinShape = new Ellipse(
                 (pinX - PIN_RADIUS),
@@ -159,10 +159,10 @@ public class DesignRenderer {
         Path2D.Double segmentPath = new Path2D.Double();
 
         // Build path based on wire vertices
-        WireVertex[] vertices = segment.getVertices();
+        Vertex[] vertices = segment.getVertices();
         for (int vertexIndex = 0; vertexIndex < vertices.length - 1; vertexIndex++) {
-            WireVertex vertexStart = vertices[vertexIndex];
-            WireVertex vertexEnd = vertices[vertexIndex + 1];
+            Vertex vertexStart = vertices[vertexIndex];
+            Vertex vertexEnd = vertices[vertexIndex + 1];
 
             // Calculate the distance between these vertices
             // Since wire segments must be either horizontal or vertical, we can simplify
@@ -204,7 +204,7 @@ public class DesignRenderer {
                     // Otherwise, draw the straight line
                     if (vertexIndex < vertices.length - 2 && segmentIndex == length - 1) {
                         // Determine next vertex direction
-                        WireVertex nextEnd = vertices[vertexIndex + 2];
+                        Vertex nextEnd = vertices[vertexIndex + 2];
                         int nextLength = Math.abs((nextEnd.getX() - vertexEnd.getX()) + (nextEnd.getY() - vertexEnd.getY()));
                         int nextXOffset = (nextEnd.getX() - vertexEnd.getX()) / nextLength;
                         int nextYOffset = (nextEnd.getY() - vertexEnd.getY()) / nextLength;

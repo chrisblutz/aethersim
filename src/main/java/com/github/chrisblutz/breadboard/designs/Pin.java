@@ -10,10 +10,8 @@ public class Pin implements BreadboardSavable {
 
     private String id;
     private String name;
-    private int chipX;
-    private int chipY;
-    private int designX;
-    private int designY;
+    private Vertex chipLocation;
+    private Vertex designLocation;
 
     public String getId() {
         return id;
@@ -31,36 +29,20 @@ public class Pin implements BreadboardSavable {
         this.name = name;
     }
 
-    public int getChipX() {
-        return chipX;
+    public Vertex getChipLocation() {
+        return chipLocation;
     }
 
-    public void setChipX(int chipX) {
-        this.chipX = chipX;
+    public void setChipLocation(Vertex chipLocation) {
+        this.chipLocation = chipLocation;
     }
 
-    public int getChipY() {
-        return chipY;
+    public Vertex getDesignLocation() {
+        return designLocation;
     }
 
-    public void setChipY(int chipY) {
-        this.chipY = chipY;
-    }
-
-    public int getDesignX() {
-        return designX;
-    }
-
-    public void setDesignX(int designX) {
-        this.designX = designX;
-    }
-
-    public int getDesignY() {
-        return designY;
-    }
-
-    public void setDesignY(int designY) {
-        this.designY = designY;
+    public void setDesignLocation(Vertex designLocation) {
+        this.designLocation = designLocation;
     }
 
     @Override

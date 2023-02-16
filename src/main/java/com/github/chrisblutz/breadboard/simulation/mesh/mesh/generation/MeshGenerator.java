@@ -125,7 +125,6 @@ public class MeshGenerator {
             MeshConnector connector = new MeshConnector(baseVertex, template.isActiveLow());
             // Determine the start and end mesh vertices of the mesh edge
             MeshVertex startVertex = pinVertices.get(new MeshPin(template.getActiveSignalInput(), chip, ancestors));
-            System.out.println("Looking for: " + new MeshPin(template.getActiveSignalInput(), chip, ancestors));
             MeshVertex endVertex = pinVertices.get(new MeshPin(template.getActiveSignalOutput(), chip, ancestors));
             // Create a mesh edge for the transistor
             MeshEdge edge = new MeshEdge(endVertex, connector);

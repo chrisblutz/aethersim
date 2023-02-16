@@ -118,9 +118,6 @@ public class MeshDesign {
         // Create a new mesh design and populate it with pins and wires
         MeshDesign meshDesign = new MeshDesign();
         meshDesign.generateFromChipDesign(null, new Chip[0], design);
-        for (MeshPin pin : meshDesign.pins) {
-            System.out.println(pin);
-        }
         // Generate the list of unique "meshed" pin sets (all pins that are connected to one another)
         meshDesign.generateUniqueSets();
         // After generation, clear the wire connection map to avoid keeping it in memory unnecessarily

@@ -2,6 +2,7 @@ package com.github.chrisblutz.breadboard.designs.templates;
 
 import com.github.chrisblutz.breadboard.designs.Chip;
 import com.github.chrisblutz.breadboard.designs.Pin;
+import com.github.chrisblutz.breadboard.designs.Vertex;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 import com.github.chrisblutz.breadboard.simulation.LogicState;
 import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
@@ -103,16 +104,13 @@ public class TransistorTemplate extends ChipTemplate {
             // Configure pins
             NPN_COLLECTOR.setId("transistor_npn_collector");
             NPN_COLLECTOR.setName("Collector");
-            NPN_COLLECTOR.setChipX(0);
-            NPN_COLLECTOR.setChipY(1);
+            NPN_COLLECTOR.setChipLocation(new Vertex(0, 1));
             NPN_BASE.setId("transistor_npn_base");
             NPN_BASE.setName("Base");
-            NPN_BASE.setChipX(0);
-            NPN_BASE.setChipY(3);
+            NPN_BASE.setChipLocation(new Vertex(0, 3));
             NPN_EMITTER.setId("transistor_npn_emitter");
             NPN_EMITTER.setName("Emitter");
-            NPN_EMITTER.setChipX(6);
-            NPN_EMITTER.setChipY(2);
+            NPN_EMITTER.setChipLocation(new Vertex(6, 2));
 
             // Configure template
             npnTransistorTemplate = new TransistorTemplate(false); // NPN transistors are active high
@@ -132,16 +130,13 @@ public class TransistorTemplate extends ChipTemplate {
             // Configure pins
             PNP_EMITTER.setId("transistor_pnp_emitter");
             PNP_EMITTER.setName("Emitter");
-            PNP_EMITTER.setChipX(0);
-            PNP_EMITTER.setChipY(1);
+            PNP_EMITTER.setChipLocation(new Vertex(0, 1));
             PNP_BASE.setId("transistor_pnp_base");
             PNP_BASE.setName("Base");
-            PNP_BASE.setChipX(0);
-            PNP_BASE.setChipY(3);
+            PNP_BASE.setChipLocation(new Vertex(0, 3));
             PNP_COLLECTOR.setId("transistor_pnp_collector");
             PNP_COLLECTOR.setName("Collector");
-            PNP_COLLECTOR.setChipX(6);
-            PNP_COLLECTOR.setChipY(2);
+            PNP_COLLECTOR.setChipLocation(new Vertex(6, 2));
 
             // Configure template
             pnpTransistorTemplate = new TransistorTemplate(true); // PNP transistors are active low

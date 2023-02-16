@@ -1,6 +1,6 @@
 package com.github.chrisblutz.breadboard.designs.wires;
 
-import com.github.chrisblutz.breadboard.simulation.mesh.mesh.MeshVertex;
+import com.github.chrisblutz.breadboard.designs.Vertex;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -9,14 +9,18 @@ public class WireNode {
 
     private final Set<WireSegment> connectedSegments = new LinkedHashSet<>();
 
-    private WireVertex vertex;
+    private Vertex vertex;
 
-    public WireNode(WireVertex vertex) {
+    public WireNode(Vertex vertex) {
         this.vertex = vertex;
     }
 
-    public WireVertex getVertex() {
+    public Vertex getVertex() {
         return vertex;
+    }
+
+    public void setVertex(Vertex vertex) {
+        this.vertex = vertex;
     }
 
     public void connect(WireSegment segment) {

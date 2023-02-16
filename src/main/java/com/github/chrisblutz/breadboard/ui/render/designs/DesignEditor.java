@@ -6,19 +6,25 @@ import com.github.chrisblutz.breadboard.designs.wires.WireNode;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.simulation.LogicState;
 import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
+import com.github.chrisblutz.breadboard.ui.render.designs.changes.DesignResizeChange;
+import com.github.chrisblutz.breadboard.ui.render.designs.changes.EditorChange;
+import com.github.chrisblutz.breadboard.ui.render.designs.changes.ViewTranslateChange;
 import com.github.chrisblutz.breadboard.ui.toolkit.*;
+import com.github.chrisblutz.breadboard.ui.toolkit.changebuffer.ChangeBuffer;
+import com.github.chrisblutz.breadboard.ui.toolkit.changebuffer.Changeset;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Rectangle;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
+import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.awt.event.KeyEvent;
 
 /**
  * This class is used to render a single design.
  */
-public class DesignEditor extends UIComponent implements UIInteractable, UIFocusable {
+public class DesignEditor extends UIComponent implements UIInteractable, UIFocusable, UIUndoable<EditorChange> {
 
     private static final int DEFAULT_GRID_UNIT = 20;
 
@@ -30,15 +36,21 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private int designGridActualWidth, designGridActualHeight;
     private int renderOriginX, renderOriginY;
 
-    private double zoom = 20, translateX = 0, translateY = 0, dragStartTranslateX = 0, dragStartTranslateY = 0;
+    public double zoom = 20, translateX = 0, translateY = 0, dragStartTranslateX = 0, dragStartTranslateY = 0;
     private double gridScaleX = -1, gridScaleY = -1;
     private int gridMouseX = -1, gridMouseY = -1;
     private int mouseX = -1, mouseY = -1, mouseDragStartX = -1, mouseDragStartY = -1;
-    private DesignRenderer renderer = new DesignRenderer();
+    public DesignRenderer renderer = new DesignRenderer();
     private ChipPin hoveredPin = null;
     private Chip hoveredChip = null;
 
+    private boolean hoveredLeftDesignEdge = false, hoveredRightDesignEdge = false, hoveredTopDesignEdge = false, hoveredBottomDesignEdge = false;
+    private boolean pressedLeftDesignEdge = false, pressedRightDesignEdge = false, pressedTopDesignEdge = false, pressedBottomDesignEdge = false;
+    private int renderedDesignOffsetX = 0, renderedDesignOffsetY = 0, renderedDesignOffsetWidth = 0, renderedDesignOffsetHeight = 0;
+
     private boolean adjusted = false, panning = false;
+
+    private final ChangeBuffer<EditorChange> changeBuffer = new ChangeBuffer<>();
 
     public DesignEditor(Design design) {
         this(design, null);
@@ -93,7 +105,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         graphics.withCopy(scaledGraphics -> {
             scaledGraphics.scale(zoom);
-            scaledGraphics.translate(translateX, translateY);
+            scaledGraphics.translate(translateX + renderedDesignOffsetX, translateY + renderedDesignOffsetY);
             graphics.withCopy(uiGraphics -> drawGrid(uiGraphics, scaledGraphics));
         });
         graphics.withCopy(scaledGraphics -> {
@@ -125,11 +137,11 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         // Draw solid border around edges
         scaledGraphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.BORDER_PRIMARY));
         scaledGraphics.setStroke(UIStroke.solid(0.2f));
-        scaledGraphics.drawRect(0, 0, design.getWidth(), design.getHeight());
+        scaledGraphics.drawRect(0, 0, design.getWidth() + renderedDesignOffsetWidth, design.getHeight() + renderedDesignOffsetHeight);
 
         // Draw dots for the interior grid
-        for (int x = 1; x < design.getWidth(); x++) {
-            for (int y = 1; y < design.getHeight(); y++) {
+        for (int x = 1; x < design.getWidth() + renderedDesignOffsetWidth; x++) {
+            for (int y = 1; y < design.getHeight() + renderedDesignOffsetHeight; y++) {
                 scaledGraphics.fillEllipse(x - 0.1f, y - 0.1f, 0.2f, 0.2f);
             }
         }
@@ -331,6 +343,15 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         gridMouseY = (int) Math.round(gridScaleY);
         hoveredPin = renderer.getHoveredPin(gridScaleX, gridScaleY);
         hoveredChip = renderer.getHoveredChip(gridScaleX, gridScaleY);
+
+        int designBorderX = (int) (translateX * zoom);
+        int designBorderY = (int) (translateY * zoom);
+        int designWidth = (int) (design.getWidth() * zoom);
+        int designHeight = (int) (design.getHeight() * zoom);
+        hoveredLeftDesignEdge = mouseX >= (designBorderX - 2) && mouseX <= (designBorderX + 2);
+        hoveredRightDesignEdge = mouseX >= (designBorderX + designWidth - 2) && mouseX <= (designBorderX + designWidth + 2);
+        hoveredTopDesignEdge = mouseY >= (designBorderY - 2) && mouseY <= (designBorderY + 2);
+        hoveredBottomDesignEdge = mouseY >= (designBorderY + designHeight - 2) && mouseY <= (designBorderY + designHeight + 2);
     }
 
     private boolean isDesignInsideView() {
@@ -356,7 +377,16 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     @Override
     public boolean onMousePressed(int x, int y, int button) {
-        if (button == 2) {
+        if (button == 1) {
+            if (hoveredLeftDesignEdge)
+                pressedLeftDesignEdge = true;
+            else if (hoveredRightDesignEdge)
+                pressedRightDesignEdge = true;
+            if (hoveredTopDesignEdge)
+                pressedTopDesignEdge = true;
+            else if (hoveredBottomDesignEdge)
+                pressedBottomDesignEdge = true;
+        } else if (button == 2) {
             mouseDragStartX = x;
             mouseDragStartY = y;
             dragStartTranslateX = translateX;
@@ -374,6 +404,35 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
                 LogicState newState = currentState == LogicState.LOW ? LogicState.HIGH : LogicState.LOW;
                 toggleTemplate.setDrivenState(hoveredChip, newState);
             }
+        } else if (button == 1) {
+            pressedLeftDesignEdge = false;
+            pressedRightDesignEdge = false;
+            pressedTopDesignEdge = false;
+            pressedBottomDesignEdge = false;
+            if (renderedDesignOffsetWidth != 0 || renderedDesignOffsetHeight != 0) {
+                getChangeBuffer().doAndAppend(
+                        new Changeset<>(
+                                new DesignResizeChange(
+                                        this,
+                                        design,
+                                        design.getWidth() + renderedDesignOffsetWidth,
+                                        design.getHeight() + renderedDesignOffsetHeight,
+                                        renderedDesignOffsetX != 0,
+                                        renderedDesignOffsetY != 0
+                                ),
+                                new ViewTranslateChange(
+                                        this,
+                                        design,
+                                        renderedDesignOffsetX,
+                                        renderedDesignOffsetY
+                                )
+                        )
+                );
+                renderedDesignOffsetWidth = 0;
+                renderedDesignOffsetHeight = 0;
+                renderedDesignOffsetX = 0;
+                renderedDesignOffsetY = 0;
+            }
         } else if (button == 2) {
             panning = false;
         }
@@ -389,9 +448,39 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     @Override
     public void onMouseDragged(int x, int y) {
+        mouseX = x;
+        mouseY = y;
+        int designBorderX = (int) (translateX * zoom);
+        int designBorderY = (int) (translateY * zoom);
+        int designWidth = (int) (design.getWidth() * zoom);
+        int designHeight = (int) (design.getHeight() * zoom);
+        if (pressedLeftDesignEdge) {
+            int gridSquareToAdd = Math.max(
+                    (int) Math.round((double) (designBorderX - mouseX) / zoom),
+                    design.getOpenDistance(Direction.LEFT)
+            );
+            renderedDesignOffsetX = -gridSquareToAdd;
+            renderedDesignOffsetWidth = gridSquareToAdd;
+        } else if (pressedRightDesignEdge) {
+            renderedDesignOffsetWidth = -Math.min(
+                    (int) -Math.round((double) (mouseX - designBorderX - designWidth) / zoom),
+                    design.getOpenDistance(Direction.RIGHT)
+            );
+        }
+        if (pressedTopDesignEdge) {
+            int gridSquareToAdd = Math.max(
+                    (int) Math.round((double) (designBorderY - mouseY) / zoom),
+                    design.getOpenDistance(Direction.UP)
+            );
+            renderedDesignOffsetY = -gridSquareToAdd;
+            renderedDesignOffsetHeight = gridSquareToAdd;
+        } else if (pressedBottomDesignEdge) {
+            renderedDesignOffsetHeight = -Math.min(
+                    (int) -Math.round((double) (mouseY - designBorderY - designHeight) / zoom),
+                    design.getOpenDistance(Direction.DOWN)
+            );
+        }
         if (panning) {
-            mouseX = x;
-            mouseY = y;
             calculateHover();
             translateX = dragStartTranslateX + (x - mouseDragStartX) / zoom;
             translateY = dragStartTranslateY + (y - mouseDragStartY) / zoom;
@@ -427,7 +516,13 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     @Override
     public boolean onKeyPressed(KeyEvent e) {
-        return false;
+        if (e.getKeyCode() == KeyEvent.VK_Z && e.isControlDown()) {
+            getChangeBuffer().undo();
+        } else if (e.getKeyCode() == KeyEvent.VK_Y && e.isControlDown()) {
+            getChangeBuffer().redo();
+        }
+
+        return true;
     }
 
     @Override
@@ -440,4 +535,9 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     @Override
     public void onFocusGained(boolean keyboardTriggered) {}
+
+    @Override
+    public ChangeBuffer<EditorChange> getChangeBuffer() {
+        return changeBuffer;
+    }
 }

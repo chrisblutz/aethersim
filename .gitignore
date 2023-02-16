@@ -1,6 +1,7 @@
 # Gradle-Specific Items
 /.gradle/
 /build/
+/bin/
 
 # IntelliJ IDEA-Specific Items
 /.idea/

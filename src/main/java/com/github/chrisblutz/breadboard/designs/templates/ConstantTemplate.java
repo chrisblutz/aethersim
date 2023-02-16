@@ -2,6 +2,7 @@ package com.github.chrisblutz.breadboard.designs.templates;
 
 import com.github.chrisblutz.breadboard.designs.Chip;
 import com.github.chrisblutz.breadboard.designs.Pin;
+import com.github.chrisblutz.breadboard.designs.Vertex;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 import com.github.chrisblutz.breadboard.simulation.LogicState;
 import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
@@ -125,8 +126,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipX(4);
-                OUTPUT.setChipY(1);
+                OUTPUT.setChipLocation(new Vertex(4, 1));
             }
 
             // Configure template
@@ -149,8 +149,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipX(4);
-                OUTPUT.setChipY(1);
+                OUTPUT.setChipLocation(new Vertex(4, 1));
             }
 
             // Configure template
@@ -173,8 +172,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipX(4);
-                OUTPUT.setChipY(1);
+                OUTPUT.setChipLocation(new Vertex(4, 1));
             }
 
             // Configure template
@@ -197,8 +195,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipX(4);
-                OUTPUT.setChipY(1);
+                OUTPUT.setChipLocation(new Vertex(4, 1));
             }
 
             // Configure template
