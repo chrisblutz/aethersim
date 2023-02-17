@@ -1,5 +1,6 @@
 package com.github.chrisblutz.breadboard.designs.wires;
 
+import com.github.chrisblutz.breadboard.designs.Design;
 import com.github.chrisblutz.breadboard.designs.Vertex;
 import com.github.chrisblutz.breadboard.utils.Direction;
 
@@ -98,10 +99,6 @@ public class WireRouter {
     private record Path(Node node, Vertex[] route) {
     }
 
-    //private Design design;
-    public static int width = 0, height = 0;
-    public static Set<Vertex> obstacles = new HashSet<>();
-
     /**
      * Calculates the optimal path (or one of the optimal paths, if multiple equally optimal paths exist) from the
      * specified start vertex to the specified end vertex.
@@ -120,6 +117,8 @@ public class WireRouter {
      * and outgoing directions of wires to and from each waypoint may differ, but the vertex will be contained
      * within the resulting path.
      *
+     * @param design                  the {@link Design} that contains the wire being routed (used for determining
+     *                                route obstacles)
      * @param startVertex             the {@link Vertex} where the route should start
      * @param preferredStartDirection the {@link Direction} in which the wire should leave the start vertex,
      *                                if possible
@@ -133,7 +132,11 @@ public class WireRouter {
      * vertex to the end vertex.  The returned vertices will represent the start vertex, end vertex, and all
      * necessary corners in the path, and will not necessarily include any of the waypoint vertices.
      */
-    public static Vertex[] route(Vertex startVertex, Direction preferredStartDirection, Vertex endVertex, Direction preferredEndDirection, Vertex[] waypointVertices) {
+    public static Vertex[] route(
+            final Design design,
+            Vertex startVertex, Direction preferredStartDirection,
+            Vertex endVertex, Direction preferredEndDirection,
+            Vertex[] waypointVertices) {
         Path[] intermediatePaths = null;
         // Initialize the first "from" (starting) vertex to the starting vertex of the wire
         Vertex fromVertex = startVertex;
@@ -141,13 +144,23 @@ public class WireRouter {
         // If we have waypoints, process each of them one at a time
         for (Vertex waypoint : waypointVertices) {
             // Find all paths to the waypoint (taking into account any previous intermediate paths)
-            intermediatePaths = routeToWaypoint(fromVertex, fromVertex.equals(startVertex) ? preferredStartDirection : null, waypoint, intermediatePaths);
+            intermediatePaths = routeToWaypoint(
+                    design,
+                    fromVertex, fromVertex.equals(startVertex) ? preferredStartDirection : null,
+                    waypoint,
+                    intermediatePaths
+            );
             // Now set the "from" vertex to use this waypoint instead
             fromVertex = waypoint;
         }
 
         // Find the ultimate route by finding the route from the current "from" vertex to the final vertex
-        Path path = routeToVertex(fromVertex, fromVertex.equals(startVertex) ? preferredStartDirection : null, endVertex, preferredEndDirection, intermediatePaths);
+        Path path = routeToVertex(
+                design,
+                fromVertex, fromVertex.equals(startVertex) ? preferredStartDirection : null,
+                endVertex, preferredEndDirection,
+                intermediatePaths
+        );
         if (path == null)
             return null;
 
@@ -156,7 +169,11 @@ public class WireRouter {
         return path.route;
     }
 
-    private static Path[] routeToWaypoint(Vertex startVertex, Direction preferredStartDirection, Vertex waypointVertex, Path[] incomingPaths) {
+    private static Path[] routeToWaypoint(
+            final Design design,
+            Vertex startVertex, Direction preferredStartDirection,
+            Vertex waypointVertex,
+            Path[] incomingPaths) {
         // For each of the horizontally- or vertically-adjacent vertices, build the quickest path to the node
         // from the start node.  Then, filter that list down to avoid null paths and paths where the waypoint is the
         // second-to-last node (since this would cause doubling-back in future paths),
@@ -168,6 +185,7 @@ public class WireRouter {
                 waypointVertex.withOffset(0, -1)
         ).stream().map(vertex ->
                 routeToVertex(
+                        design,
                         startVertex,
                         preferredStartDirection,
                         vertex,
@@ -178,7 +196,10 @@ public class WireRouter {
                 path -> path != null && !path.node.previousVertex.equals(waypointVertex)
         ).map(path -> {
             // Calculate the overall cost of traversing to the waypoint vertex from the adjacent vertex
-            double cost = path.node.currentCost + calculateActualCost(path.node.previousVertex, path.node.vertex, waypointVertex, null, null, false);
+            double cost = path.node.currentCost + calculateActualCost(
+                    path.node.previousVertex, path.node.vertex, waypointVertex,
+                    null, null, false
+            );
             // Create the end node in this path by adding the waypoint vertex itself and calculating the total cost
             Node endNode = new Node(waypointVertex, path.node.vertex, cost, cost);
             // Create the new list of vertices in the path by appending the waypoint vertex
@@ -189,9 +210,13 @@ public class WireRouter {
         }).toArray(Path[]::new);
     }
 
-    private static Path routeToVertex(Vertex startVertex, Direction preferredStartDirection, Vertex endVertex, Direction preferredEndDirection, Path[] incomingPaths) {
+    private static Path routeToVertex(
+            final Design design,
+            Vertex startVertex, Direction preferredStartDirection,
+            Vertex endVertex, Direction preferredEndDirection,
+            Path[] incomingPaths) {
         // If one of the endpoints is not valid (i.e. we can't route to it), return null now
-        if (!isValidVertex(startVertex) || !isValidVertex(endVertex))
+        if (!isValidVertex(design, startVertex) || !isValidVertex(design, endVertex))
             return null;
 
         // If the start and end vertex are the same, choose the cheapest path from the incoming (if available) or
@@ -257,7 +282,7 @@ public class WireRouter {
                     currentVertex.withOffset(-1, 0),
                     currentVertex.withOffset(0, 1),
                     currentVertex.withOffset(0, -1)
-            ).stream().filter(WireRouter::isValidVertex).forEach(nextVertex -> {
+            ).stream().filter(vertex -> isValidVertex(design, vertex)).forEach(nextVertex -> {
                 // If we had incoming paths passed to this method, we need to patch them in here if the previous vertex
                 // is null (indicating we're at the start)
                 double currentCost = current.currentCost;
@@ -266,8 +291,7 @@ public class WireRouter {
                 if (previousVertex == null && incomingPaths != null && incomingPaths.length > 0) {
                     // Calculate cost of the first path, while filtering out any paths that contain the "next"
                     // vertex as the "previous" vertex so we don't double back
-                    Path cheapestIncoming = Arrays
-                            .stream(incomingPaths)
+                    Path cheapestIncoming = Arrays.stream(incomingPaths)
                             .filter(path ->
                                     !path.node.previousVertex.equals(nextVertex)
                             ).min((path1, path2) -> {
@@ -321,29 +345,31 @@ public class WireRouter {
         return null;
     }
 
-    private static boolean isValidVertex(Vertex vertex) {
-        return (vertex.getX() >= 0 && vertex.getX() < width) &&
-                (vertex.getY() >= 0 && vertex.getY() < height) &&
-                (obstacles != null && !obstacles.contains(vertex)); // TODO
+    private static boolean isValidVertex(Design design, Vertex vertex) {
+        return (vertex.getX() >= 0 && vertex.getX() <= design.getWidth()) &&
+                (vertex.getY() >= 0 && vertex.getY() <= design.getHeight());
+         // TODO
     }
 
     private static double calculateTotalHeuristicCost(Vertex startVertex, Vertex endVertex) {
-        // Base cost of moving between grid squares is always 1
-        double baseCost = 1;
+        // Base cost of moving between grid squares is always 1, so we can just use the Manhattan distance here
+        int xDiff = endVertex.getX() - startVertex.getX();
+        int yDiff = endVertex.getY() - startVertex.getY();
+        double baseCost = Math.abs(xDiff) + Math.abs(yDiff);
         // If the path involves at least one corner, add the penalty
-        if ((endVertex.getX() - startVertex.getX()) != 0 && (endVertex.getY() - startVertex.getY()) != 0)
+        if (xDiff != 0 && yDiff != 0)
             baseCost += 0.5;
         return baseCost;
     }
 
     private static double calculateActualCost(Vertex previousVertex, Vertex currentVertex, Vertex nextVertex, Direction preferredStartDirection, Direction preferredEndDirection, boolean isCurrentWaypoint) {
-        // Base cost of moving between grid squares is always 1
-        double baseCost = 1;
+        // Base cost of moving between grid squares is always 1, so we can just use the Manhattan distance here
+        int xDiff = nextVertex.getX() - currentVertex.getX();
+        int yDiff = nextVertex.getY() - currentVertex.getY();
+        double baseCost = Math.abs(xDiff) + Math.abs(yDiff);
         // If we change direction with this movement, add a penalty
         // If we're changing direction at a waypoint, use a lower penalty to encourage
         // cornering at waypoints (instead of next to them)
-        int xDiff = nextVertex.getX() - currentVertex.getX();
-        int yDiff = nextVertex.getY() - currentVertex.getY();
         if (previousVertex != null &&
                 ((currentVertex.getX() - previousVertex.getX()) != xDiff ||
                         (currentVertex.getY() - previousVertex.getY()) != yDiff))

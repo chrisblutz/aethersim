@@ -1,6 +1,7 @@
 package com.github.chrisblutz.breadboard.designs;
 
 import com.github.chrisblutz.breadboard.designs.wires.WireNode;
+import com.github.chrisblutz.breadboard.designs.wires.WireRoutable;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
@@ -27,14 +28,19 @@ public class Wire implements BreadboardSavable {
         return segments;
     }
 
-    public void addSegment(WireSegment segment) {
+    public void addSegment(final WireSegment segment) {
         segments.add(segment);
-        // "Connect" this segment to it's nodes
-        for (WireNode node : segment.getEndpointNodes())
-            node.connect(segment);
-        // Track the pins and nodes connected to this segment
-        nodes.addAll(segment.getEndpointNodes());
-        connectedPins.addAll(segment.getEndpointPins());
+        // "Connect" this segment to its nodes and pins
+        Set.of(segment.getStart(), segment.getEnd())
+                .forEach(endpoint -> {
+                    if (endpoint instanceof WireNode node) {
+                        node.connect(segment);
+                        nodes.add(node);
+                    } else if (endpoint instanceof ChipPin pin) {
+                        connectedPins.add(pin);
+                    }
+                }
+        );
     }
 
     public void addSegments(WireSegment... segments) {

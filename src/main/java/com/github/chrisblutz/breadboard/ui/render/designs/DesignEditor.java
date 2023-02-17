@@ -1,7 +1,9 @@
 package com.github.chrisblutz.breadboard.ui.render.designs;
 
 import com.github.chrisblutz.breadboard.designs.*;
+import com.github.chrisblutz.breadboard.designs.templates.ChipTemplate;
 import com.github.chrisblutz.breadboard.designs.templates.ToggleTemplate;
+import com.github.chrisblutz.breadboard.designs.templates.TransistorTemplate;
 import com.github.chrisblutz.breadboard.designs.wires.WireNode;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.simulation.LogicState;
@@ -28,13 +30,8 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     private static final int DEFAULT_GRID_UNIT = 20;
 
-    private final EditorParameters rendererParameters;
-
     private final Design design;
     private final SimulatedDesign simulatedDesign;
-
-    private int designGridActualWidth, designGridActualHeight;
-    private int renderOriginX, renderOriginY;
 
     public double zoom = 20, translateX = 0, translateY = 0, dragStartTranslateX = 0, dragStartTranslateY = 0;
     private double gridScaleX = -1, gridScaleY = -1;
@@ -48,6 +45,8 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private boolean pressedLeftDesignEdge = false, pressedRightDesignEdge = false, pressedTopDesignEdge = false, pressedBottomDesignEdge = false;
     private int renderedDesignOffsetX = 0, renderedDesignOffsetY = 0, renderedDesignOffsetWidth = 0, renderedDesignOffsetHeight = 0;
 
+    private ChipTemplate selectedAddingChipTemplate = TransistorTemplate.getNPNTransistorTemplate();
+
     private boolean adjusted = false, panning = false;
 
     private final ChangeBuffer<EditorChange> changeBuffer = new ChangeBuffer<>();
@@ -57,8 +56,6 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     }
 
     public DesignEditor(Design design, SimulatedDesign simulatedDesign) {
-        this.rendererParameters = new EditorParameters(DEFAULT_GRID_UNIT);
-
         this.design = design;
         this.simulatedDesign = simulatedDesign;
 
@@ -77,9 +74,9 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             double actualDesignHeight = design.getHeight() * DEFAULT_GRID_UNIT;
 
             double fitToWidthZoom = DEFAULT_GRID_UNIT, fitToHeightZoom = DEFAULT_GRID_UNIT;
-            if (designGridActualWidth > getWidth())
+            if (actualDesignWidth > getWidth())
                 fitToWidthZoom = (double) getWidth() / design.getWidth();
-            if (designGridActualHeight > getHeight())
+            if (actualDesignHeight > getHeight())
                 fitToHeightZoom = (double) getHeight() / design.getHeight();
 
             double targetZoom = Math.min(DEFAULT_GRID_UNIT, Math.min(fitToWidthZoom, fitToHeightZoom));
@@ -100,9 +97,6 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         // Each tick, update the colors for the "conflicted" wire state so it flickers
         DesignEditorUtils.updateRandomConflictedState();
 
-        // Calculate initial render space parameters
-        calculateRenderSpaceParameters();
-
         graphics.withCopy(scaledGraphics -> {
             scaledGraphics.scale(zoom);
             scaledGraphics.translate(translateX + renderedDesignOffsetX, translateY + renderedDesignOffsetY);
@@ -118,15 +112,6 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             scaledGraphics.translate(translateX, translateY);
             graphics.withCopy(uiGraphics -> drawMouseObjects(uiGraphics, scaledGraphics));
         });
-    }
-
-    private void calculateRenderSpaceParameters() {
-        // Calculate the "actual" size of the grid in the render space
-        this.designGridActualWidth = getActualDimension(design.getWidth());
-        this.designGridActualHeight = getActualDimension(design.getHeight());
-        // Calculate the "origin" of the design in the render space (centers the design if it doesn't fill it)
-        this.renderOriginX = designGridActualWidth < getRenderSpace().getWidth() ? ((getRenderSpace().getWidth() - designGridActualWidth) / 2) : 0; // TODO: mouse drag origin
-        this.renderOriginY = designGridActualHeight < getRenderSpace().getHeight() ? ((getRenderSpace().getHeight() - designGridActualHeight) / 2) : 0; // TODO: mouse drag origin
     }
 
     private void drawGrid(UIGraphics uiGraphics, UIGraphics scaledGraphics) {
@@ -150,7 +135,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private void drawDesign(UIGraphics graphics, Design design) {
         // Draw all design chips
         for (Chip chip : design.getChips())
-            graphics.withCopy(chipGraphics -> drawChip(chipGraphics, chip));
+            graphics.withCopy(chipGraphics -> drawChip(chipGraphics, chip.getChipTemplate(), chip));
 
         // Draw all design chip pin backgrounds
         for (Chip chip : design.getChips())
@@ -218,11 +203,11 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             graphics.fill(renderer.getWireNodeShape(node));
     }
 
-    private void drawChip(UIGraphics graphics, Chip chip) {
-        drawChip(graphics, chip, simulatedDesign.getSimulatedChipDesign(chip), renderer.getChipShape(chip), hoveredPin == null && hoveredChip == chip);
+    private void drawChip(UIGraphics graphics, ChipTemplate template, Chip chip) {
+        drawChip(graphics, template, chip, simulatedDesign.getSimulatedChipDesign(chip), renderer.getChipShape(chip), hoveredPin == null && hoveredChip == chip);
     }
 
-    private void drawChip(UIGraphics graphics, Chip chip, SimulatedDesign design, RoundRectangle chipShape, boolean hovered) {
+    private void drawChip(UIGraphics graphics, ChipTemplate template, Chip chip, SimulatedDesign design, RoundRectangle chipShape, boolean hovered) {
         graphics.setColor(UITheme.getColor(ThemeKeys.Colors.Design.CHIP_BACKGROUND));
         if (hovered)
             graphics.setColor(UIColor.rgb(255, 255, 0));//Color.YELLOW);
@@ -230,7 +215,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         graphics.withCopy(chipGraphics -> {
             chipGraphics.translate(chipShape.getX(), chipShape.getY()); // TODO
-            chip.getChipTemplate().renderChipPackage(chipGraphics, chip, design);
+            template.renderChipPackage(chipGraphics, chip, design);
         });
     }
 
@@ -302,38 +287,30 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             uiGraphics.drawStringCentered(tooltipText, (float) (x + 10 + (tooltipTextBounds.getWidth() / 2)), (float) (y + 5 + (tooltipTextBounds.getHeight() / 2)));
         }
 
-//        if (hoveredPin == null && hoveredChip == null) {
-//            Chip chip = new Chip();
-//            chip.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
-//            int newChipX = gridMouseX - (chip.getChipTemplate().getWidth() / 2);
-//            int newChipY = gridMouseY - (chip.getChipTemplate().getHeight() / 2);
-//            scaledGraphics.setAlpha(0.8f);
-//            drawChip(scaledGraphics, chip, SimulatedDesign.none(), renderer.getNewChipShape(chip, newChipX, newChipY), false);
-//            for (Pin pin : chip.getChipTemplate().getPins()) {
-//                drawPinBackground(scaledGraphics, renderer.getNewPinShape(chip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
-//                drawPinForeground(scaledGraphics, renderer.getNewPinShape(chip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
-//            }
-//        }
-    }
+        if (selectedAddingChipTemplate != null && gridMouseX > 0 && gridMouseX < design.getWidth() && gridMouseY > 0 && gridMouseY < design.getHeight()) {
+            int newChipX = gridMouseX - (selectedAddingChipTemplate.getWidth() / 2);
+            int newChipY = gridMouseY - (selectedAddingChipTemplate.getHeight() / 2);
 
-    private int getActualX(int gridX) {
-        return renderOriginX + (gridX * rendererParameters.getGridUnit());
-    }
+            // Check that all vertices within the chip are empty
+            boolean conflict = false;
+            for (int chipX = newChipX; chipX < newChipX + selectedAddingChipTemplate.getWidth(); chipX++) {
+                for (int chipY = newChipY; chipY < newChipY + selectedAddingChipTemplate.getHeight(); chipY++) {
+                    if (!design.getVertexContents(new Vertex(chipX, chipY)).isEmpty()) {
+                        conflict = true;
+                        break;
+                    }
+                }
+            }
 
-    private float getActualXFloat(float gridX) {
-        return renderOriginX + (gridX * rendererParameters.getGridUnit());
-    }
-
-    private int getActualY(int gridY) {
-        return renderOriginY + (gridY * rendererParameters.getGridUnit());
-    }
-
-    private float getActualYFloat(float gridY) {
-        return renderOriginY + (gridY * rendererParameters.getGridUnit());
-    }
-
-    private int getActualDimension(int gridDimension) {
-        return gridDimension * rendererParameters.getGridUnit();
+            if (!conflict) {
+                scaledGraphics.setAlpha(0.8f);
+                drawChip(scaledGraphics, selectedAddingChipTemplate, null, SimulatedDesign.none(), renderer.getNewChipShape(selectedAddingChipTemplate, newChipX, newChipY), false);
+                for (Pin pin : selectedAddingChipTemplate.getPins()) {
+                    drawPinBackground(scaledGraphics, renderer.getNewPinShape(selectedAddingChipTemplate, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
+                    drawPinForeground(scaledGraphics, renderer.getNewPinShape(selectedAddingChipTemplate, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
+                }
+            }
+        }
     }
 
     private void calculateHover() {

@@ -1,6 +1,7 @@
 package com.github.chrisblutz.breadboard.ui.render.designs;
 
 import com.github.chrisblutz.breadboard.designs.*;
+import com.github.chrisblutz.breadboard.designs.templates.ChipTemplate;
 import com.github.chrisblutz.breadboard.designs.wires.WireNode;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
@@ -38,22 +39,22 @@ public class DesignRenderer {
         return chipShapes.get(chip);
     }
 
-    public RoundRectangle getNewChipShape(Chip chip, int x, int y) {
+    public RoundRectangle getNewChipShape(ChipTemplate template, int x, int y) {
         RoundRectangle chipShape = new RoundRectangle(
                 x,
                 y,
-                chip.getChipTemplate().getWidth(),
-                chip.getChipTemplate().getHeight(),
+                template.getWidth(),
+                template.getHeight(),
                 0.75,
                 0.75 // TODO default
         );
         return chipShape;
     }
 
-    public Ellipse getNewPinShape(Chip chip, Pin pin, int x, int y) {
+    public Ellipse getNewPinShape(ChipTemplate template, Pin pin, int x, int y) {
         // Calculate pin X/Y based on whether it's attached to a chip
-        double pinX = (chip == null ? pin.getDesignLocation().getX() : x + pin.getChipLocation().getX());
-        double pinY = (chip == null ? pin.getDesignLocation().getY() : y + pin.getChipLocation().getY());
+        double pinX = (template == null ? pin.getDesignLocation().getX() : x + pin.getChipLocation().getX());
+        double pinY = (template == null ? pin.getDesignLocation().getY() : y + pin.getChipLocation().getY());
         // Create the shape
         Ellipse pinShape = new Ellipse(
                 (pinX - PIN_RADIUS),
@@ -146,8 +147,8 @@ public class DesignRenderer {
         // Generate all node shapes
         for (WireNode node : wire.getNodes()) {
             Ellipse nodeShape = new Ellipse(
-                    (node.getVertex().getX() - NODE_RADIUS),
-                    (node.getVertex().getY() - NODE_RADIUS),
+                    (node.getLocation().getX() - NODE_RADIUS),
+                    (node.getLocation().getY() - NODE_RADIUS),
                     (NODE_RADIUS * 2),
                     (NODE_RADIUS * 2)
             );
@@ -159,7 +160,12 @@ public class DesignRenderer {
         Path2D.Double segmentPath = new Path2D.Double();
 
         // Build path based on wire vertices
-        Vertex[] vertices = segment.getVertices();
+        Vertex[] vertices = segment.getRouteVertices();
+
+        // If vertices are null, don't generate anything
+        if (vertices == null)
+            return new Path2D.Double();
+
         for (int vertexIndex = 0; vertexIndex < vertices.length - 1; vertexIndex++) {
             Vertex vertexStart = vertices[vertexIndex];
             Vertex vertexEnd = vertices[vertexIndex + 1];

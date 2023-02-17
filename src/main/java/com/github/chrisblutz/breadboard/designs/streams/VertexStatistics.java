@@ -10,8 +10,8 @@ public class VertexStatistics {
     private int minimumX = Integer.MAX_VALUE, maximumX = Integer.MIN_VALUE;
     private int minimumY = Integer.MAX_VALUE, maximumY = Integer.MIN_VALUE;
 
-    private Function<Vertex, Boolean> xDecider;
-    private Function<Vertex, Boolean> yDecider;
+    private final Function<Vertex, Boolean> xDecider;
+    private final Function<Vertex, Boolean> yDecider;
 
     public VertexStatistics() {
         this(null, null);

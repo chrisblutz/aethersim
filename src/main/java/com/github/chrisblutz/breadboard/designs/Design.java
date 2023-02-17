@@ -11,9 +11,25 @@ import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.util.*;
-import java.util.stream.Collector;
 
 public class Design implements BreadboardSavable {
+
+    public enum Content {
+        EMPTY,
+        EDGE,
+        CHIP,
+        PIN,
+        WIRE_CONTROL,
+        OUT_OF_BOUNDS;
+
+        public boolean isEmpty() {
+            return this == EMPTY;
+        }
+
+        public boolean isOutOfBounds() {
+            return this == OUT_OF_BOUNDS;
+        }
+    }
 
     private int width;
     public int height;
@@ -24,6 +40,8 @@ public class Design implements BreadboardSavable {
     private final Map<ChipPin, Set<Wire>> pinWireConnections = new HashMap<>();
 
     private final Map<Direction, Integer> openDistances = new HashMap<>();
+
+    private final Map<Vertex, Content> vertexContentCache = new HashMap<>();
 
     private int transistorCount = 0;
 
@@ -55,17 +73,40 @@ public class Design implements BreadboardSavable {
         if (xOffset != 0 || yOffset != 0)
             moveElements(xOffset, yOffset);
 
+        // Store the old width/height for calculations and set the new ones
+        int oldWidth = getWidth();
+        int oldHeight = getHeight();
         setWidth(width);
         setHeight(height);
 
-        // Recalculate the open distances to each edge
+        // Move all pins on the right and bottom edges to the correct value now that the dimensions have changed
+        // Pins at the top and left are anchored at 0, so they don't need to be moved
+        pins.forEach(pin -> {
+            // Only move pins on the
+            int pinX = pin.getDesignLocation().getX();
+            int pinY = pin.getDesignLocation().getY();
+            pin.setDesignLocation(
+                    pin.getDesignLocation().withOffset(
+                            (pinX == oldWidth && pinY > 0 && pinY < oldHeight) ? (getWidth() - pinX) : 0,
+                            (pinY == oldHeight && pinX > 0 && pinX < oldWidth) ? (getHeight() - pinY) : 0
+                    )
+            );
+        });
+
+        // Reroute all wires in the design
+        wires.stream()
+                .map(Wire::getSegments)
+                .flatMap(Set::stream)
+                .forEach(WireSegment::reroute);
+
+        // Recalculate the open distances to each edge and clear the vertex content cache
         recalculateOpenDistances();
+        clearVertexContentCache();
     }
 
     private void moveElements(int xOffset, int yOffset) {
         // Move all pins (unless they are at the edge of the design), chips, and wires
         pins.forEach(pin -> {
-            // If this pin is on the edge of the design, don't offset it
             int pinX = pin.getDesignLocation().getX();
             int pinY = pin.getDesignLocation().getY();
             pin.setDesignLocation(
@@ -78,16 +119,18 @@ public class Design implements BreadboardSavable {
         chips.forEach(chip -> chip.setLocation(chip.getLocation().withOffset(xOffset, yOffset)));
         wires.forEach(wire -> {
             // Move all segment vertices and nodes
-            wire.getNodes().forEach(node -> node.setVertex(node.getVertex().withOffset(xOffset, yOffset)));
+            wire.getNodes().forEach(node -> node.setLocation(node.getLocation().withOffset(xOffset, yOffset)));
             wire.getSegments().forEach(segment -> {
                 // Move all vertices
-                segment.setVertices(
-                        Arrays.stream(segment.getVertices())
+                segment.setRouteWaypoints(
+                        Arrays.stream(segment.getRouteWaypoints())
                                 .map(vertex -> vertex.withOffset(xOffset, yOffset))
                                 .toArray(Vertex[]::new)
                 );
             });
         });
+
+        clearVertexContentCache();
     }
 
     public List<Pin> getPins() {
@@ -100,6 +143,7 @@ public class Design implements BreadboardSavable {
 
     public void addPin(Pin pin) {
         pins.add(pin);
+        clearVertexContentCache();
     }
 
     public void addPins(Pin... pins) {
@@ -109,6 +153,7 @@ public class Design implements BreadboardSavable {
 
     public void removePin(Pin pin) {
         pins.remove(pin);
+        clearVertexContentCache();
     }
 
     public void removePins(Pin... pins) {
@@ -128,6 +173,8 @@ public class Design implements BreadboardSavable {
             transistorCount++;
         else if (chip.getChipTemplate() instanceof DesignedTemplate designedTemplate)
             transistorCount += designedTemplate.getDesign().getTransistorCount();
+
+        clearVertexContentCache();
     }
 
     public void addChips(Chip... chips) {
@@ -147,6 +194,8 @@ public class Design implements BreadboardSavable {
             transistorCount--;
         else if (chip.getChipTemplate() instanceof DesignedTemplate designedTemplate)
             transistorCount -= designedTemplate.getDesign().getTransistorCount();
+
+        clearVertexContentCache();
     }
 
     public void removeChips(Chip... chips) {
@@ -167,6 +216,8 @@ public class Design implements BreadboardSavable {
                 pinWireConnections.put(pin, new LinkedHashSet<>());
             pinWireConnections.get(pin).add(wire);
         }
+
+        clearVertexContentCache();
     }
 
     public void addWires(Wire... wires) {
@@ -181,11 +232,20 @@ public class Design implements BreadboardSavable {
         for (ChipPin pin : wire.getConnectedPins())
             if (pinWireConnections.containsKey(pin))
                 pinWireConnections.get(pin).remove(wire);
+
+        clearVertexContentCache();
     }
 
     public void removeWires(Wire... wires) {
         for (Wire wire : wires)
             removeWire(wire);
+    }
+
+    public void rerouteWires() {
+        wires.stream()
+                .map(Wire::getSegments)
+                .flatMap(Set::stream)
+                .forEach(WireSegment::reroute);
     }
 
     public Set<Wire> getWiresConnectedToPin(ChipPin pin) {
@@ -198,14 +258,14 @@ public class Design implements BreadboardSavable {
         // be moved before it would interfere with components.
 
         // For each component, calculate the necessary maximums and minimums
-        VertexStatistics pinStatistics = pins.stream()
+        VertexStatistics pinStatistics = pins.parallelStream()
                 .map(Pin::getDesignLocation)
                 .collect(VertexStatistics.collector(
                         vertex -> vertex.getX() > 0 && vertex.getX() < getWidth(),
                         vertex -> vertex.getY() > 0 && vertex.getY() < getHeight()
                 ));
         // For the chips, enforce a one-square boundary to each edge, so add/remove one where necessary
-        VertexStatistics chipStatistics = chips.stream()
+        VertexStatistics chipStatistics = chips.parallelStream()
                 .map(chip -> new Vertex[] {
                         chip.getLocation().withOffset(-1, -1),
                         chip.getLocation().withOffset(
@@ -214,16 +274,23 @@ public class Design implements BreadboardSavable {
                         )
                 }).flatMap(Arrays::stream)
                 .collect(VertexStatistics.collector());
-        VertexStatistics wireNodeStatistics = wires.stream()
+        // Add a buffer around nodes and waypoints to ensure these cannot reside on the edge of a design
+        // Wires will still be routable around edges, but only if necessary, and if the wire router
+        // cannot find another way to get them to their pins
+        VertexStatistics wireNodeStatistics = wires.parallelStream()
                 .map(Wire::getNodes)
                 .flatMap(Set::stream)
-                .map(WireNode::getVertex)
+                .map(WireNode::getLocation)
+                .map(vertex -> Set.of(vertex.withOffset(-1, -1), vertex.withOffset(1, 1)))
+                .flatMap(Set::stream)
                 .collect(VertexStatistics.collector());
-        VertexStatistics wireSegmentStatistics = wires.stream()
+        VertexStatistics wireSegmentStatistics = wires.parallelStream()
                 .map(Wire::getSegments)
                 .flatMap(Set::stream)
-                .map(WireSegment::getVertices)
+                .map(WireSegment::getRouteWaypoints)
                 .flatMap(Arrays::stream)
+                .map(vertex -> Set.of(vertex.withOffset(-1, -1), vertex.withOffset(1, 1)))
+                .flatMap(Set::stream)
                 .collect(VertexStatistics.collector());
 
         // Combine all the statistics objects so we can get one minimum and maximum
@@ -264,6 +331,64 @@ public class Design implements BreadboardSavable {
                         getHeight() - 2
                 )
         );
+    }
+
+    public Content getVertexContents(Vertex vertex) {
+        // If the vertex is already in the cache, return the cached value
+        if (vertexContentCache.containsKey(vertex))
+            return vertexContentCache.get(vertex);
+
+        // Assume the space is empty unless we find something there
+        Content vertexContents = Content.EMPTY;
+
+        // Start by eliminating any out-of-bounds vertices
+        int x = vertex.getX();
+        int y = vertex.getY();
+        if (x < 0 || x > getWidth() || y < 0 || y > getHeight()) {
+            vertexContents = Content.OUT_OF_BOUNDS;
+        } else if (isPinAt(vertex)) {
+            vertexContents = Content.PIN;
+        } else if (x == 0 || x == getWidth() || y == 0 || y == getHeight()) {
+            vertexContents = Content.EDGE;
+        } else if (isWireControlPointAt(vertex)) {
+            vertexContents = Content.WIRE_CONTROL;
+        } else if (isChipAt(vertex)) {
+            vertexContents = Content.CHIP;
+        }
+
+        // Cache the result and then return it
+        vertexContentCache.put(vertex, vertexContents);
+        return vertexContents;
+    }
+
+    private boolean isPinAt(final Vertex vertex) {
+        return pins.parallelStream()
+                .anyMatch(pin -> pin.getDesignLocation().equals(vertex));
+    }
+
+    private boolean isWireControlPointAt(final Vertex vertex) {
+        return (
+                wires.parallelStream()
+                        .map(Wire::getNodes)
+                        .flatMap(Set::stream)
+                        .anyMatch(node -> node.getLocation().equals(vertex))
+        ) || (
+                wires.parallelStream()
+                        .map(Wire::getSegments)
+                        .flatMap(Set::stream)
+                        .map(WireSegment::getRouteWaypoints)
+                        .flatMap(Arrays::stream)
+                        .anyMatch(waypoint -> waypoint.equals(vertex))
+        );
+    }
+
+    private boolean isChipAt(final Vertex vertex) {
+        return chips.parallelStream()
+                .anyMatch(chip -> chip.getBoundingBox().contains(vertex.getX(), vertex.getY()));
+    }
+
+    protected void clearVertexContentCache() {
+        vertexContentCache.clear();
     }
 
     public int getOpenDistance(Direction direction) {

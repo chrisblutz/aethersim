@@ -1,7 +1,9 @@
 package com.github.chrisblutz.breadboard.designs;
 
+import com.github.chrisblutz.breadboard.designs.wires.WireRoutable;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
+import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -12,6 +14,8 @@ public class Pin implements BreadboardSavable {
     private String name;
     private Vertex chipLocation;
     private Vertex designLocation;
+    private Direction chipOrientation;
+    private Direction designOrientation;
 
     public String getId() {
         return id;
@@ -43,6 +47,22 @@ public class Pin implements BreadboardSavable {
 
     public void setDesignLocation(Vertex designLocation) {
         this.designLocation = designLocation;
+    }
+
+    public Direction getChipOrientation() {
+        return chipOrientation;
+    }
+
+    public void setChipOrientation(Direction chipOrientation) {
+        this.chipOrientation = chipOrientation;
+    }
+
+    public Direction getDesignOrientation() {
+        return designOrientation;
+    }
+
+    public void setDesignOrientation(Direction designOrientation) {
+        this.designOrientation = designOrientation;
     }
 
     @Override

@@ -1,11 +1,12 @@
 package com.github.chrisblutz.breadboard.designs.wires;
 
 import com.github.chrisblutz.breadboard.designs.Vertex;
+import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class WireNode {
+public class WireNode implements WireRoutable {
 
     private final Set<WireSegment> connectedSegments = new LinkedHashSet<>();
 
@@ -15,12 +16,18 @@ public class WireNode {
         this.vertex = vertex;
     }
 
-    public Vertex getVertex() {
+    @Override
+    public Vertex getLocation() {
         return vertex;
     }
 
-    public void setVertex(Vertex vertex) {
+    public void setLocation(Vertex vertex) {
         this.vertex = vertex;
+    }
+
+    @Override
+    public Direction getPreferredWireDirection() {
+        return null;
     }
 
     public void connect(WireSegment segment) {
