@@ -4,16 +4,13 @@ import com.github.chrisblutz.breadboard.designs.DesignElement;
 import com.github.chrisblutz.breadboard.designs.Point;
 import com.github.chrisblutz.breadboard.utils.Direction;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+public class WireWaypoint extends DesignElement implements WireRoutable {
 
-public class WireNode extends DesignElement implements WireRoutable {
-
-    private final Set<WireSegment> connectedSegments = new LinkedHashSet<>();
+    private WireSegment wireSegment;
 
     private Point location;
 
-    public WireNode(Point location) {
+    public WireWaypoint(Point location) {
         this.location = location;
         // Attach the transform to the point
         location.setTransform(getTransform());
@@ -35,10 +32,6 @@ public class WireNode extends DesignElement implements WireRoutable {
         return null;
     }
 
-    public void connect(WireSegment segment) {
-        connectedSegments.add(segment);
-    }
-
     @Override
     protected void onTransformUpdated() {
 
@@ -46,7 +39,7 @@ public class WireNode extends DesignElement implements WireRoutable {
 
     @Override
     protected void onTransformAccepted() {
-        // Update the location of the node to accept the transformed values
+        // Update the location of the waypoint to accept the transformed values
         location = location.withTransform();
     }
 

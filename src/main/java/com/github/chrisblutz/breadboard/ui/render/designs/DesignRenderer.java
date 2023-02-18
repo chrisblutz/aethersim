@@ -6,7 +6,7 @@ import com.github.chrisblutz.breadboard.designs.wires.WireNode;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.Ellipse;
 import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
-import com.github.chrisblutz.breadboard.designs.Vertex;
+import com.github.chrisblutz.breadboard.designs.Point;
 
 import java.awt.geom.Path2D;
 import java.util.LinkedHashMap;
@@ -159,42 +159,42 @@ public class DesignRenderer {
     private Path2D.Double generateWireSegmentShape(WireSegment segment) {
         Path2D.Double segmentPath = new Path2D.Double();
 
-        // Build path based on wire vertices
-        Vertex[] vertices = segment.getRouteVertices();
+        // Build path based on wire segment points
+        Point[] points = segment.getRoutePoints();
 
-        // If vertices are null, don't generate anything
-        if (vertices == null)
+        // If the points array is null, don't generate anything
+        if (points == null)
             return new Path2D.Double();
 
-        for (int vertexIndex = 0; vertexIndex < vertices.length - 1; vertexIndex++) {
-            Vertex vertexStart = vertices[vertexIndex];
-            Vertex vertexEnd = vertices[vertexIndex + 1];
+        for (int pointIndex = 0; pointIndex < points.length - 1; pointIndex++) {
+            Point startPoint = points[pointIndex];
+            Point endPoint = points[pointIndex + 1];
 
-            // Calculate the distance between these vertices
+            // Calculate the distance between these points
             // Since wire segments must be either horizontal or vertical, we can simplify
-            int length = Math.abs((vertexEnd.getX() - vertexStart.getX()) + (vertexEnd.getY() - vertexStart.getY()));
-            int xOffset = (vertexEnd.getX() - vertexStart.getX()) / length;
-            int yOffset = (vertexEnd.getY() - vertexStart.getY()) / length;
+            int length = Math.abs((endPoint.getX() - startPoint.getX()) + (endPoint.getY() - startPoint.getY()));
+            int xOffset = (endPoint.getX() - startPoint.getX()) / length;
+            int yOffset = (endPoint.getY() - startPoint.getY()) / length;
 
             for (int segmentIndex = 0; segmentIndex < length; segmentIndex++) {
-                int startX = vertexStart.getX() + (xOffset * segmentIndex);
-                int startY = vertexStart.getY() + (yOffset * segmentIndex);
-                int endX = vertexStart.getX() + (xOffset * (segmentIndex + 1));
-                int endY = vertexStart.getY() + (yOffset * (segmentIndex + 1));
+                int startX = startPoint.getX() + (xOffset * segmentIndex);
+                int startY = startPoint.getY() + (yOffset * segmentIndex);
+                int endX = startPoint.getX() + (xOffset * (segmentIndex + 1));
+                int endY = startPoint.getY() + (yOffset * (segmentIndex + 1));
 
                 // If this is the first point on the path, set the initial point
-                if (vertexIndex == 0 && segmentIndex == 0)
+                if (pointIndex == 0 && segmentIndex == 0)
                     segmentPath.moveTo(startX, startY);
 
                 // If we're on a corner, render segments in halves
-                if ((vertexIndex > 0 && segmentIndex == 0) || (vertexIndex < vertices.length - 2 && segmentIndex == length - 1)) {
+                if ((pointIndex > 0 && segmentIndex == 0) || (pointIndex < points.length - 2 && segmentIndex == length - 1)) {
                     // Since we can have a corner directly into another corner, handle both cases here
                     double edgeMidX = startX + ((double) xOffset / 2);
                     double edgeMidY = startY + ((double) yOffset / 2);
 
                     // If we're coming out of a corner, draw the second half of the corner
                     // Otherwise, draw the straight line
-                    if (vertexIndex > 0 && segmentIndex == 0) {
+                    if (pointIndex > 0 && segmentIndex == 0) {
                         // Calculate the quad control point
                         double quadControlX = startX + (2 * xOffset * WIRE_ARC_MIDPOINT_GUIDE);
                         double quadControlY = startY + (2 * yOffset * WIRE_ARC_MIDPOINT_GUIDE);
@@ -208,12 +208,12 @@ public class DesignRenderer {
 
                     // If we're going into a corner, draw the first half of a corner
                     // Otherwise, draw the straight line
-                    if (vertexIndex < vertices.length - 2 && segmentIndex == length - 1) {
-                        // Determine next vertex direction
-                        Vertex nextEnd = vertices[vertexIndex + 2];
-                        int nextLength = Math.abs((nextEnd.getX() - vertexEnd.getX()) + (nextEnd.getY() - vertexEnd.getY()));
-                        int nextXOffset = (nextEnd.getX() - vertexEnd.getX()) / nextLength;
-                        int nextYOffset = (nextEnd.getY() - vertexEnd.getY()) / nextLength;
+                    if (pointIndex < points.length - 2 && segmentIndex == length - 1) {
+                        // Determine next point direction
+                        Point nextEnd = points[pointIndex + 2];
+                        int nextLength = Math.abs((nextEnd.getX() - endPoint.getX()) + (nextEnd.getY() - endPoint.getY()));
+                        int nextXOffset = (nextEnd.getX() - endPoint.getX()) / nextLength;
+                        int nextYOffset = (nextEnd.getY() - endPoint.getY()) / nextLength;
 
                         // Calculate the "center" of the arc the corners will follow
                         int cornerArcMidXOffset = nextXOffset - xOffset;

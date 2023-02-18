@@ -5,7 +5,7 @@ import com.github.chrisblutz.breadboard.simulation.timing.SimulationTickTimer;
 
 public class Simulation {
 
-    private static final SimulationTickTimer TIMER = new SimulationTickTimer(10); // TODO default
+    private static final SimulationTickTimer TIMER = new SimulationTickTimer(2); // TODO default
     private static Simulator simulator;
 
     public static Simulator getSimulator() {

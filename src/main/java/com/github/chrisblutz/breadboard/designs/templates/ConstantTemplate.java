@@ -2,16 +2,14 @@ package com.github.chrisblutz.breadboard.designs.templates;
 
 import com.github.chrisblutz.breadboard.designs.Chip;
 import com.github.chrisblutz.breadboard.designs.Pin;
-import com.github.chrisblutz.breadboard.designs.Vertex;
+import com.github.chrisblutz.breadboard.designs.Point;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 import com.github.chrisblutz.breadboard.simulation.LogicState;
 import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
 import com.github.chrisblutz.breadboard.ui.render.designs.DesignEditorUtils;
-import com.github.chrisblutz.breadboard.ui.toolkit.UIColor;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIStroke;
 import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
-import com.github.chrisblutz.breadboard.ui.toolkit.display.helpers.GraphicsContext;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 
 import java.util.HashMap;
@@ -126,7 +124,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipLocation(new Vertex(4, 1));
+                OUTPUT.setChipLocation(new Point(4, 1));
             }
 
             // Configure template
@@ -149,7 +147,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipLocation(new Vertex(4, 1));
+                OUTPUT.setChipLocation(new Point(4, 1));
             }
 
             // Configure template
@@ -172,7 +170,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipLocation(new Vertex(4, 1));
+                OUTPUT.setChipLocation(new Point(4, 1));
             }
 
             // Configure template
@@ -195,7 +193,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipLocation(new Vertex(4, 1));
+                OUTPUT.setChipLocation(new Point(4, 1));
             }
 
             // Configure template

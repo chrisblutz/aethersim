@@ -6,7 +6,7 @@ import com.github.chrisblutz.breadboard.utils.Direction;
 public record ChipPin(Chip chip, Pin pin) implements WireRoutable {
 
     @Override
-    public Vertex getLocation() {
+    public Point getLocation() {
         // Calculate the design-space location of this chip pin
         if (chip == null)
             return pin.getDesignLocation();

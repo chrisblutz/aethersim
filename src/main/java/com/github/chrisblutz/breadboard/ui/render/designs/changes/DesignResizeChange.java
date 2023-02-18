@@ -9,11 +9,11 @@ public class DesignResizeChange extends EditorChange {
     private final int newWidth, newHeight;
     private final boolean shiftChipsX, shiftChipsY;
 
-    public DesignResizeChange(DesignEditor editor, Design design, int newWidth, int newHeight, boolean shiftChipsX, boolean shiftChipsY) {
+    public DesignResizeChange(DesignEditor editor, Design design, int oldWidth, int oldHeight, int newWidth, int newHeight, boolean shiftChipsX, boolean shiftChipsY) {
         super(editor, design);
 
-        this.oldWidth = design.getWidth();
-        this.oldHeight = design.getHeight();
+        this.oldWidth = oldWidth;
+        this.oldHeight = oldHeight;
         this.newWidth = newWidth;
         this.newHeight = newHeight;
         this.shiftChipsX = shiftChipsX;

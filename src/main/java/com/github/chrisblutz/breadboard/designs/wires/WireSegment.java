@@ -1,21 +1,20 @@
 package com.github.chrisblutz.breadboard.designs.wires;
 
-import com.github.chrisblutz.breadboard.designs.ChipPin;
 import com.github.chrisblutz.breadboard.designs.Design;
-import com.github.chrisblutz.breadboard.designs.Vertex;
-import com.github.chrisblutz.breadboard.designs.exceptions.DesignException;
+import com.github.chrisblutz.breadboard.designs.DesignElement;
+import com.github.chrisblutz.breadboard.designs.Point;
 
-import java.util.*;
+import java.util.Arrays;
 
 public class WireSegment {
 
     private final Design design;
     private final WireRoutable start, end;
 
-    private Vertex[] routeWaypoints;
-    private Vertex[] routeVertices;
+    private WireWaypoint[] routeWaypoints;
+    private Point[] routePoints;
 
-    public WireSegment(Design design, WireRoutable start, WireRoutable end, Vertex... routeWaypoints) {
+    public WireSegment(Design design, WireRoutable start, WireRoutable end, WireWaypoint... routeWaypoints) {
         this.design = design;
         this.start = start;
         this.end = end;
@@ -31,28 +30,30 @@ public class WireSegment {
         return end;
     }
 
-    public Vertex[] getRouteWaypoints() {
+    public WireWaypoint[] getRouteWaypoints() {
         return routeWaypoints;
     }
 
-    public void setRouteWaypoints(Vertex[] routeWaypoints) {
+    public void setRouteWaypoints(WireWaypoint[] routeWaypoints) {
         this.routeWaypoints = routeWaypoints;
         reroute();
     }
 
-    public Vertex[] getRouteVertices() {
-        return routeVertices;
+    public Point[] getRoutePoints() {
+        return routePoints;
     }
 
     public void reroute() {
-        // Calculate the route vertices using the wire router
-        routeVertices = WireRouter.route(
+        // Calculate the route points using the wire router
+        routePoints = WireRouter.route(
                 design,
                 getStart().getLocation(),
                 getStart().getPreferredWireDirection(),
                 getEnd().getLocation(),
                 getEnd().getPreferredWireDirection(),
-                getRouteWaypoints()
+                Arrays.stream(getRouteWaypoints())
+                        .map(WireWaypoint::getLocation)
+                        .toArray(Point[]::new)
         );
     }
 }

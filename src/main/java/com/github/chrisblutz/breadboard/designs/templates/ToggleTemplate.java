@@ -2,7 +2,7 @@ package com.github.chrisblutz.breadboard.designs.templates;
 
 import com.github.chrisblutz.breadboard.designs.Chip;
 import com.github.chrisblutz.breadboard.designs.Pin;
-import com.github.chrisblutz.breadboard.designs.Vertex;
+import com.github.chrisblutz.breadboard.designs.Point;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 import com.github.chrisblutz.breadboard.simulation.LogicState;
 import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
@@ -90,7 +90,7 @@ public class ToggleTemplate extends SimulatedTemplate<ToggleState> {
             if (OUTPUT.getId() == null) {
                 OUTPUT.setId("toggle_output");
                 OUTPUT.setName("Output");
-                OUTPUT.setChipLocation(new Vertex(4, 2));
+                OUTPUT.setChipLocation(new Point(4, 2));
             }
 
             // Configure template

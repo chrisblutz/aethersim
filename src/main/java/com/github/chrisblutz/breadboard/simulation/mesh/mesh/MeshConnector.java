@@ -35,20 +35,25 @@ public class MeshConnector {
         this.currentDelay = -1;
     }
 
-    public void tick() {
+    public boolean tick() {
         boolean deciderActive = decider.getActualState() == (activeLow ? LogicState.LOW : LogicState.HIGH);
 
         // If the state has changed, reset the delay.  Otherwise, if the delay is still counting, handle this tick.
+        boolean propagateChanges = false;
         if (connecting != deciderActive) {
             connecting = deciderActive;
             currentDelay = random.nextInt(MAXIMUM_RANDOM_DELAY) + 1;
         } else if (currentDelay >= 0){
             // If the current delay is 0, we've reached the end of the delay, so set the status
-            if (currentDelay == 0)
+            if (currentDelay == 0) {
                 currentlyConnected = connecting;
+                propagateChanges = true;
+            }
 
             // Decrement the delay
             currentDelay--;
         }
+
+        return propagateChanges;
     }
 }

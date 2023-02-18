@@ -7,21 +7,23 @@ import com.github.chrisblutz.breadboard.ui.toolkit.shape.Rectangle;
 
 import java.util.Map;
 
-public class Chip implements BreadboardSavable {
+public class Chip extends DesignElement implements BreadboardSavable {
 
-    private Vertex location;
+    private Point location;
 
     private ChipTemplate chipTemplate;
     private Rectangle boundingBox;
 
-    public Vertex getLocation() {
+    public Point getLocation() {
         return location;
     }
 
-    public void setLocation(Vertex location) {
+    public void setLocation(Point location) {
         this.location = location;
         if (chipTemplate != null)
             this.boundingBox = new Rectangle(getLocation().getX(), getLocation().getY(), chipTemplate.getWidth(), chipTemplate.getHeight());
+        // Attach the transform to the point
+        location.setTransform(getTransform());
     }
 
     public ChipTemplate getChipTemplate() {
@@ -46,5 +48,21 @@ public class Chip implements BreadboardSavable {
     @Override
     public void loadFromYAML(Map<String, Object> yamlMapping) {
 
+    }
+
+    @Override
+    protected void onTransformUpdated() {
+
+    }
+
+    @Override
+    protected void onTransformAccepted() {
+        // Update the location of the chip to accept the transformed values
+        location = location.withTransform();
+    }
+
+    @Override
+    public boolean contains(Point point) {
+        return false;
     }
 }

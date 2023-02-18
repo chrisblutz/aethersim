@@ -43,7 +43,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
     private boolean hoveredLeftDesignEdge = false, hoveredRightDesignEdge = false, hoveredTopDesignEdge = false, hoveredBottomDesignEdge = false;
     private boolean pressedLeftDesignEdge = false, pressedRightDesignEdge = false, pressedTopDesignEdge = false, pressedBottomDesignEdge = false;
-    private int renderedDesignOffsetX = 0, renderedDesignOffsetY = 0, renderedDesignOffsetWidth = 0, renderedDesignOffsetHeight = 0;
+    private int designInitialWidth = 0, designInitialHeight = 0;
 
     private ChipTemplate selectedAddingChipTemplate = TransistorTemplate.getNPNTransistorTemplate();
 
@@ -99,7 +99,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         graphics.withCopy(scaledGraphics -> {
             scaledGraphics.scale(zoom);
-            scaledGraphics.translate(translateX + renderedDesignOffsetX, translateY + renderedDesignOffsetY);
+            scaledGraphics.translate(translateX, translateY);
             graphics.withCopy(uiGraphics -> drawGrid(uiGraphics, scaledGraphics));
         });
         graphics.withCopy(scaledGraphics -> {
@@ -122,11 +122,11 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         // Draw solid border around edges
         scaledGraphics.setColor(UITheme.getColor(ThemeKeys.Colors.UI.BORDER_PRIMARY));
         scaledGraphics.setStroke(UIStroke.solid(0.2f));
-        scaledGraphics.drawRect(0, 0, design.getWidth() + renderedDesignOffsetWidth, design.getHeight() + renderedDesignOffsetHeight);
+        scaledGraphics.drawRect(0, 0, design.getWidth(), design.getHeight());
 
         // Draw dots for the interior grid
-        for (int x = 1; x < design.getWidth() + renderedDesignOffsetWidth; x++) {
-            for (int y = 1; y < design.getHeight() + renderedDesignOffsetHeight; y++) {
+        for (int x = 1; x < design.getWidth(); x++) {
+            for (int y = 1; y < design.getHeight(); y++) {
                 scaledGraphics.fillEllipse(x - 0.1f, y - 0.1f, 0.2f, 0.2f);
             }
         }
@@ -291,11 +291,11 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             int newChipX = gridMouseX - (selectedAddingChipTemplate.getWidth() / 2);
             int newChipY = gridMouseY - (selectedAddingChipTemplate.getHeight() / 2);
 
-            // Check that all vertices within the chip are empty
+            // Check that all points within the chip are empty
             boolean conflict = false;
             for (int chipX = newChipX; chipX < newChipX + selectedAddingChipTemplate.getWidth(); chipX++) {
                 for (int chipY = newChipY; chipY < newChipY + selectedAddingChipTemplate.getHeight(); chipY++) {
-                    if (!design.getVertexContents(new Vertex(chipX, chipY)).isEmpty()) {
+                    if (!design.getPointContents(new Point(chipX, chipY)).isEmpty()) {
                         conflict = true;
                         break;
                     }
@@ -363,6 +363,8 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
                 pressedTopDesignEdge = true;
             else if (hoveredBottomDesignEdge)
                 pressedBottomDesignEdge = true;
+            designInitialWidth = design.getWidth();
+            designInitialHeight = design.getHeight();
         } else if (button == 2) {
             mouseDragStartX = x;
             mouseDragStartY = y;
@@ -382,34 +384,32 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
                 toggleTemplate.setDrivenState(hoveredChip, newState);
             }
         } else if (button == 1) {
-            pressedLeftDesignEdge = false;
-            pressedRightDesignEdge = false;
-            pressedTopDesignEdge = false;
-            pressedBottomDesignEdge = false;
-            if (renderedDesignOffsetWidth != 0 || renderedDesignOffsetHeight != 0) {
-                getChangeBuffer().doAndAppend(
+            if (design.getWidth() != designInitialWidth || design.getHeight() != designInitialHeight) {
+                getChangeBuffer().append(
                         new Changeset<>(
                                 new DesignResizeChange(
                                         this,
                                         design,
-                                        design.getWidth() + renderedDesignOffsetWidth,
-                                        design.getHeight() + renderedDesignOffsetHeight,
-                                        renderedDesignOffsetX != 0,
-                                        renderedDesignOffsetY != 0
+                                        designInitialWidth,
+                                        designInitialHeight,
+                                        design.getWidth(),
+                                        design.getHeight(),
+                                        pressedLeftDesignEdge,
+                                        pressedTopDesignEdge
                                 ),
                                 new ViewTranslateChange(
                                         this,
                                         design,
-                                        renderedDesignOffsetX,
-                                        renderedDesignOffsetY
+                                        pressedLeftDesignEdge ? (designInitialWidth - design.getWidth()) : 0,
+                                        pressedTopDesignEdge ? (designInitialHeight - design.getHeight()) : 0
                                 )
                         )
                 );
-                renderedDesignOffsetWidth = 0;
-                renderedDesignOffsetHeight = 0;
-                renderedDesignOffsetX = 0;
-                renderedDesignOffsetY = 0;
             }
+            pressedLeftDesignEdge = false;
+            pressedRightDesignEdge = false;
+            pressedTopDesignEdge = false;
+            pressedBottomDesignEdge = false;
         } else if (button == 2) {
             panning = false;
         }
@@ -431,32 +431,36 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         int designBorderY = (int) (translateY * zoom);
         int designWidth = (int) (design.getWidth() * zoom);
         int designHeight = (int) (design.getHeight() * zoom);
+        int squaresToAddX = 0, squaresToAddY = 0;
+        boolean shiftElementsX = false, shiftElementsY = false;
         if (pressedLeftDesignEdge) {
-            int gridSquareToAdd = -Math.min(
+            squaresToAddX = -Math.min(
                     (int) -Math.round((double) (designBorderX - mouseX) / zoom),
                     design.getOpenDistance(Direction.LEFT)
             );
-            renderedDesignOffsetX = -gridSquareToAdd;
-            renderedDesignOffsetWidth = gridSquareToAdd;
+            shiftElementsX = true;
         } else if (pressedRightDesignEdge) {
-            renderedDesignOffsetWidth = -Math.min(
+            squaresToAddX = -Math.min(
                     (int) -Math.round((double) (mouseX - designBorderX - designWidth) / zoom),
                     design.getOpenDistance(Direction.RIGHT)
             );
         }
         if (pressedTopDesignEdge) {
-            int gridSquareToAdd = -Math.min(
+            squaresToAddY = -Math.min(
                     (int) -Math.round((double) (designBorderY - mouseY) / zoom),
                     design.getOpenDistance(Direction.UP)
             );
-            renderedDesignOffsetY = -gridSquareToAdd;
-            renderedDesignOffsetHeight = gridSquareToAdd;
+            shiftElementsY = true;
         } else if (pressedBottomDesignEdge) {
-            renderedDesignOffsetHeight = -Math.min(
+            squaresToAddY = -Math.min(
                     (int) -Math.round((double) (mouseY - designBorderY - designHeight) / zoom),
                     design.getOpenDistance(Direction.DOWN)
             );
         }
+        translateX -= shiftElementsX ? squaresToAddX : 0;
+        translateY -= shiftElementsY ? squaresToAddY : 0;
+        design.resize(design.getWidth() + squaresToAddX, design.getHeight() + squaresToAddY, shiftElementsX, shiftElementsY);
+        renderer.generate(design);
         if (panning) {
             calculateHover();
             translateX = dragStartTranslateX + (x - mouseDragStartX) / zoom;

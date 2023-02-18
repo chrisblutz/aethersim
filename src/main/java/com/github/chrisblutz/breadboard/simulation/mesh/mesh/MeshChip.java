@@ -32,7 +32,7 @@ public class MeshChip<T extends ChipState> {
         return outputVertices;
     }
 
-    public void tick(MeshSimulationCoordinator coordinator) {
+    public boolean tick(MeshSimulationCoordinator coordinator) {
         // Get the chip state for the current chip
         T state = simulatedTemplate.getState(chip);
         // For each input pin, set its value based on the state of the vertex
@@ -46,6 +46,7 @@ public class MeshChip<T extends ChipState> {
         simulatedTemplate.simulate(state);
 
         // Queue simulated updated states based on the output pins
+        boolean propagateChanges = false;
         for (Pin output : simulatedTemplate.getOutputPins()) {
             MeshVertex pinVertex = outputVertices.get(output);
             LogicState actualState = state.getDrivenOutputState(output);
@@ -60,7 +61,10 @@ public class MeshChip<T extends ChipState> {
                                 suggestedState
                         )
                 );
+                propagateChanges = true;
             }
         }
+
+        return propagateChanges;
     }
 }

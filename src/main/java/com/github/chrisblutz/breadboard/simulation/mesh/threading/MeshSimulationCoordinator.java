@@ -7,16 +7,14 @@ import com.github.chrisblutz.breadboard.simulation.mesh.mesh.generation.MeshSimu
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class MeshSimulationCoordinator {
 
     private ExecutorService threadPool = null;
 
-    private final List<Future<?>> meshProcessorFutures = new ArrayList<>();
+    private final List<Future<Boolean>> booleanFutures = new ArrayList<>();
+    private final List<Future<?>> voidFutures = new ArrayList<>();
 
     private final List<MeshStateProcessor> queuedMeshStateProcessors = new ArrayList<>();
 
@@ -54,7 +52,12 @@ public class MeshSimulationCoordinator {
 
     public synchronized void queueNow(Runnable runnable) {
         // Submit the runnable to the thread pool
-        meshProcessorFutures.add(threadPool.submit(runnable));
+        voidFutures.add(threadPool.submit(runnable));
+    }
+
+    public synchronized void queueNow(Callable<Boolean> callable) {
+        // Submit the runnable to the thread pool
+        booleanFutures.add(threadPool.submit(callable));
     }
 
     public void tick() {
@@ -69,8 +72,12 @@ public class MeshSimulationCoordinator {
         for (MeshConnector connector : simulationConfig.getMeshConnectors())
             queueNow(connector::tick);
 
-        // Wait for all currently-executing workers to finish
-        waitForTaskCompletion();
+        // Wait for all currently-executing workers to finish.  If we don't need to update any vertices
+        // (e.g., if nothing changed) then exit early after clearing queued processors
+        if(!waitForBooleanTaskCompletion()) {
+            queuedMeshStateProcessors.clear();
+            return;
+        }
 
         // Next, submit all queued mesh state processors
         for (MeshStateProcessor processor : queuedMeshStateProcessors)
@@ -78,29 +85,48 @@ public class MeshSimulationCoordinator {
         queuedMeshStateProcessors.clear();
 
         // Wait for all currently-executing workers to finish
-        waitForTaskCompletion();
+        waitForVoidTaskCompletion();
 
         // Finally, queue rectifiers for all vertices
         for (MeshVertex vertex : simulationConfig.getMeshVertices())
             queueNow(vertex::rectifyStates);
 
         // Wait for all currently-executing workers to finish
-        waitForTaskCompletion();
+        waitForVoidTaskCompletion();
     }
 
-    private void waitForTaskCompletion() {
+    private boolean waitForBooleanTaskCompletion() {
+        boolean result = false;
         // Wait for all currently-executing workers to finish
         // Enhanced for-loops aren't used here to avoid concurrency issues (where futures potentially
         // get added to the end of the list while we're still reading through it)
-        for (int index = 0; index < meshProcessorFutures.size(); index++) {
+        for (int index = 0; index < booleanFutures.size(); index++) {
             try {
-                meshProcessorFutures.get(index).get();
+                if (booleanFutures.get(index).get())
+                    result = true;
             } catch (InterruptedException | ExecutionException e) {
                 // TODO
                 throw new RuntimeException(e);
             }
         }
         // Clear futures from list
-        meshProcessorFutures.clear();
+        booleanFutures.clear();
+        return result;
+    }
+
+    private void waitForVoidTaskCompletion() {
+        // Wait for all currently-executing workers to finish
+        // Enhanced for-loops aren't used here to avoid concurrency issues (where futures potentially
+        // get added to the end of the list while we're still reading through it)
+        for (int index = 0; index < voidFutures.size(); index++) {
+            try {
+                voidFutures.get(index).get();
+            } catch (InterruptedException | ExecutionException e) {
+                // TODO
+                throw new RuntimeException(e);
+            }
+        }
+        // Clear futures from list
+        voidFutures.clear();
     }
 }

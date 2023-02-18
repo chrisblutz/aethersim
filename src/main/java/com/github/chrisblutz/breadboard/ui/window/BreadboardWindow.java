@@ -4,6 +4,7 @@ import com.github.chrisblutz.breadboard.designs.*;
 import com.github.chrisblutz.breadboard.designs.templates.*;
 import com.github.chrisblutz.breadboard.designs.wires.WireNode;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
+import com.github.chrisblutz.breadboard.designs.wires.WireWaypoint;
 import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
 import com.github.chrisblutz.breadboard.simulation.Simulation;
 import com.github.chrisblutz.breadboard.simulation.mesh.MeshSimulator;
@@ -19,7 +20,7 @@ import com.github.chrisblutz.breadboard.ui.toolkit.builtin.text.UIText;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.Direction;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.UIDimension;
-import com.github.chrisblutz.breadboard.designs.Vertex;
+import com.github.chrisblutz.breadboard.designs.Point;
 
 import javax.swing.*;
 
@@ -45,36 +46,36 @@ public class BreadboardWindow {
         Pin norInput1 = new Pin();
         norInput1.setId("input_1");
         norInput1.setName("Input");
-        norInput1.setChipLocation(new Vertex(0, 1));
-        norInput1.setDesignLocation(new Vertex(0, 8));
+        norInput1.setChipLocation(new Point(0, 1));
+        norInput1.setDesignLocation(new Point(0, 8));
 
         Pin norInput2 = new Pin();
         norInput2.setId("input_2");
         norInput2.setName("Input");
-        norInput2.setChipLocation(new Vertex(0, 3));
-        norInput2.setDesignLocation(new Vertex(0, 14));
+        norInput2.setChipLocation(new Point(0, 3));
+        norInput2.setDesignLocation(new Point(0, 14));
 
         Pin norOutput = new Pin();
         norOutput.setId("output");
         norOutput.setName("Output");
-        norOutput.setChipLocation(new Vertex(6, 2));
-        norOutput.setDesignLocation(new Vertex(20, 10));
+        norOutput.setChipLocation(new Point(6, 2));
+        norOutput.setDesignLocation(new Point(20, 10));
 
         Chip norTransistor1 = new Chip();
         norTransistor1.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
-        norTransistor1.setLocation(new Vertex(9, 5));
+        norTransistor1.setLocation(new Point(9, 5));
 
         Chip norTransistor2 = new Chip();
         norTransistor2.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
-        norTransistor2.setLocation(new Vertex(9, 11));
+        norTransistor2.setLocation(new Point(9, 11));
 
         Chip norDrivenLow = new Chip();
         norDrivenLow.setChipTemplate(ConstantTemplate.getDrivenLowTemplate());
-        norDrivenLow.setLocation(new Vertex(1, 1));
+        norDrivenLow.setLocation(new Point(1, 1));
 
         Chip norPulledHigh = new Chip();
         norPulledHigh.setChipTemplate(ConstantTemplate.getPulledHighTemplate());
-        norPulledHigh.setLocation(new Vertex(11, 1));
+        norPulledHigh.setLocation(new Point(11, 1));
 
         Wire norInput1Wire = new Wire();
         WireSegment norInput1WireSegment = new WireSegment(
@@ -93,12 +94,12 @@ public class BreadboardWindow {
         norInput2Wire.addSegment(norInput2WireSegment);
 
         Wire norDrivenLowWire = new Wire();
-        WireNode norDrivenLowWireNode = new WireNode(new Vertex(7, 6));
+        WireNode norDrivenLowWireNode = new WireNode(new Point(7, 6));
         WireSegment norDrivenLowWireSegment1 = new WireSegment(
                 norDesign,
                 new ChipPin(norDrivenLow, ConstantTemplate.OUTPUT),
                 norDrivenLowWireNode,
-                new Vertex(7, 2)
+                new WireWaypoint(new Point(7, 2))
         );
         WireSegment norDrivenLowWireSegment2 = new WireSegment(
                 norDesign,
@@ -109,20 +110,20 @@ public class BreadboardWindow {
                 norDesign,
                 norDrivenLowWireNode,
                 new ChipPin(norTransistor2, TransistorTemplate.NPN_COLLECTOR),
-                new Vertex(7, 12)
+                new WireWaypoint(new Point(7, 12))
         );
         norDrivenLowWire.addSegments(
                 norDrivenLowWireSegment1, norDrivenLowWireSegment2, norDrivenLowWireSegment3
         );
 
         Wire norPulledHighWire = new Wire();
-        WireNode norPulledHighWireT1Node = new WireNode(new Vertex(17, 7));
-        WireNode norPulledHighWireOutputNode = new WireNode(new Vertex(17, 10));
+        WireNode norPulledHighWireT1Node = new WireNode(new Point(17, 7));
+        WireNode norPulledHighWireOutputNode = new WireNode(new Point(17, 10));
         WireSegment norPulledHighWireSegment1 = new WireSegment(
                 norDesign,
                 new ChipPin(norPulledHigh, ConstantTemplate.OUTPUT),
                 norPulledHighWireT1Node,
-                new Vertex(17, 2)
+                new WireWaypoint(new Point(17, 2))
         );
         WireSegment norPulledHighWireSegment2 = new WireSegment(
                 norDesign,
@@ -143,7 +144,7 @@ public class BreadboardWindow {
                 norDesign,
                 norPulledHighWireOutputNode,
                 new ChipPin(norTransistor2, TransistorTemplate.NPN_EMITTER),
-                new Vertex(17, 13)
+                new WireWaypoint(new Point(17, 13))
         );
         norPulledHighWire.addSegments(
                 norPulledHighWireSegment1, norPulledHighWireSegment2, norPulledHighWireSegment3,
@@ -182,34 +183,34 @@ public class BreadboardWindow {
         Pin srLatchReset = new Pin();
         srLatchReset.setId("reset");
         srLatchReset.setName("Reset");
-        srLatchReset.setChipLocation(new Vertex(0, 1));
-        srLatchReset.setDesignLocation(new Vertex(0, 2));
+        srLatchReset.setChipLocation(new Point(0, 1));
+        srLatchReset.setDesignLocation(new Point(0, 2));
 
         Pin srLatchSet = new Pin();
         srLatchSet.setId("set");
         srLatchSet.setName("Set");
-        srLatchSet.setChipLocation(new Vertex(0, 3));
-        srLatchSet.setDesignLocation(new Vertex(0, 11));
+        srLatchSet.setChipLocation(new Point(0, 3));
+        srLatchSet.setDesignLocation(new Point(0, 11));
 
         Pin srLatchOutput = new Pin();
         srLatchOutput.setId("output");
         srLatchOutput.setName("Output");
-        srLatchOutput.setChipLocation(new Vertex(6, 1));
-        srLatchOutput.setDesignLocation(new Vertex(15, 3));
+        srLatchOutput.setChipLocation(new Point(6, 1));
+        srLatchOutput.setDesignLocation(new Point(15, 3));
 
         Pin srLatchInverseOutput = new Pin();
         srLatchInverseOutput.setId("inverse_output");
         srLatchInverseOutput.setName("Inverse Output");
-        srLatchInverseOutput.setChipLocation(new Vertex(6, 3));
-        srLatchInverseOutput.setDesignLocation(new Vertex(15, 10));
+        srLatchInverseOutput.setChipLocation(new Point(6, 3));
+        srLatchInverseOutput.setDesignLocation(new Point(15, 10));
 
         Chip srLatchNor1 = new Chip();
         srLatchNor1.setChipTemplate(norTemplate);
-        srLatchNor1.setLocation(new Vertex(4, 1));
+        srLatchNor1.setLocation(new Point(4, 1));
 
         Chip srLatchNor2 = new Chip();
         srLatchNor2.setChipTemplate(norTemplate);
-        srLatchNor2.setLocation(new Vertex(4, 8));
+        srLatchNor2.setLocation(new Point(4, 8));
 
         Wire srLatchResetNor1Wire = new Wire();
         WireSegment srLatchResetNor1WireSegment = new WireSegment(
@@ -228,7 +229,7 @@ public class BreadboardWindow {
         srLatchSetNor2Wire.addSegment(srLatchSetNor2WireSegment);
 
         Wire srLatchNor1OutputWire = new Wire();
-        WireNode srLatchNor1OutputWireNode = new WireNode(new Vertex(12, 3));
+        WireNode srLatchNor1OutputWireNode = new WireNode(new Point(12, 3));
         WireSegment srLatchNor1OutputWireSegment1 = new WireSegment(
                 srLatchDesign,
                 new ChipPin(srLatchNor1, norOutput),
@@ -243,14 +244,14 @@ public class BreadboardWindow {
                 srLatchDesign,
                 srLatchNor1OutputWireNode,
                 new ChipPin(srLatchNor2, norInput1),
-                new Vertex(12, 7), new Vertex(2, 7), new Vertex(2, 9)
+                new WireWaypoint(new Point(12, 7)), new WireWaypoint(new Point(2, 7)), new WireWaypoint(new Point(2, 9))
         );
         srLatchNor1OutputWire.addSegments(
                 srLatchNor1OutputWireSegment1, srLatchNor1OutputWireSegment2, srLatchNor1OutputWireSegment3
         );
 
         Wire srLatchNor2OutputWire = new Wire();
-        WireNode srLatchNor2OutputWireNode = new WireNode(new Vertex(13, 10));
+        WireNode srLatchNor2OutputWireNode = new WireNode(new Point(13, 10));
         WireSegment srLatchNor2OutputWireSegment1 = new WireSegment(
                 srLatchDesign,
                 new ChipPin(srLatchNor2, norOutput),
@@ -265,7 +266,7 @@ public class BreadboardWindow {
                 srLatchDesign,
                 srLatchNor2OutputWireNode,
                 new ChipPin(srLatchNor1, norInput2),
-                new Vertex(13, 6), new Vertex(2, 6), new Vertex(2, 4)
+                new WireWaypoint(new Point(13, 6)), new WireWaypoint(new Point(2, 6)), new WireWaypoint(new Point(2, 4))
         );
         srLatchNor2OutputWire.addSegments(
                 srLatchNor2OutputWireSegment1, srLatchNor2OutputWireSegment2, srLatchNor2OutputWireSegment3
@@ -302,22 +303,22 @@ public class BreadboardWindow {
 
         Chip testToggleReset = new Chip();
         testToggleReset.setChipTemplate(ToggleTemplate.getTemplate());
-        testToggleReset.setLocation(new Vertex(1, 1));
+        testToggleReset.setLocation(new Point(1, 1));
 
         Chip testToggleSet = new Chip();
         testToggleSet.setChipTemplate(ToggleTemplate.getTemplate());
-        testToggleSet.setLocation(new Vertex(1, 5));
+        testToggleSet.setLocation(new Point(1, 5));
 
         Chip testSRLatch = new Chip();
         testSRLatch.setChipTemplate(srLatchTemplate);
-        testSRLatch.setLocation(new Vertex(9, 3));
+        testSRLatch.setLocation(new Point(9, 3));
 
         Wire testResetWire = new Wire();
         WireSegment testResetWireSegment = new WireSegment(
                 testDesign,
                 new ChipPin(testToggleReset, ToggleTemplate.OUTPUT),
                 new ChipPin(testSRLatch, srLatchReset),
-                new Vertex(7, 3), new Vertex(7, 4)
+                new WireWaypoint(new Point(7, 3)), new WireWaypoint(new Point(7, 4))
         );
         testResetWire.addSegment(testResetWireSegment);
 
@@ -326,7 +327,7 @@ public class BreadboardWindow {
                 testDesign,
                 new ChipPin(testToggleSet, ToggleTemplate.OUTPUT),
                 new ChipPin(testSRLatch, srLatchSet),
-                new Vertex(7, 7), new Vertex(7, 6)
+                new WireWaypoint(new Point(7, 7)), new WireWaypoint(new Point(7, 6))
         );
         testSetWire.addSegment(testSetWireSegment);
 
