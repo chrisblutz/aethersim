@@ -63,6 +63,6 @@ public class Chip extends DesignElement implements BreadboardSavable {
 
     @Override
     public boolean contains(Point point) {
-        return false;
+        return boundingBox.contains(point.getX(), point.getY());
     }
 }

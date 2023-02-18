@@ -16,6 +16,14 @@ public class WireWaypoint extends DesignElement implements WireRoutable {
         location.setTransform(getTransform());
     }
 
+    public void attach(WireSegment segment) {
+        this.wireSegment = segment;
+    }
+
+    public WireSegment getWireSegment() {
+        return wireSegment;
+    }
+
     @Override
     public Point getLocation() {
         return location;
@@ -45,6 +53,6 @@ public class WireWaypoint extends DesignElement implements WireRoutable {
 
     @Override
     public boolean contains(Point point) {
-        return false;
+        return getLocation().equals(point);
     }
 }

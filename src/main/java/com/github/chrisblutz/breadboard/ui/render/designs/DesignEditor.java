@@ -1,13 +1,15 @@
 package com.github.chrisblutz.breadboard.ui.render.designs;
 
 import com.github.chrisblutz.breadboard.designs.*;
-import com.github.chrisblutz.breadboard.designs.templates.ChipTemplate;
 import com.github.chrisblutz.breadboard.designs.templates.ToggleTemplate;
 import com.github.chrisblutz.breadboard.designs.templates.TransistorTemplate;
 import com.github.chrisblutz.breadboard.designs.wires.WireNode;
+import com.github.chrisblutz.breadboard.designs.wires.WireRoutable;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
+import com.github.chrisblutz.breadboard.designs.wires.WireWaypoint;
 import com.github.chrisblutz.breadboard.simulation.LogicState;
 import com.github.chrisblutz.breadboard.simulation.SimulatedDesign;
+import com.github.chrisblutz.breadboard.simulation.Simulation;
 import com.github.chrisblutz.breadboard.ui.render.designs.changes.DesignResizeChange;
 import com.github.chrisblutz.breadboard.ui.render.designs.changes.EditorChange;
 import com.github.chrisblutz.breadboard.ui.render.designs.changes.ViewTranslateChange;
@@ -22,6 +24,8 @@ import com.github.chrisblutz.breadboard.ui.toolkit.shape.RoundRectangle;
 import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.awt.event.KeyEvent;
+import java.awt.geom.Path2D;
+import java.util.Arrays;
 
 /**
  * This class is used to render a single design.
@@ -31,21 +35,24 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private static final int DEFAULT_GRID_UNIT = 20;
 
     private final Design design;
-    private final SimulatedDesign simulatedDesign;
+    private SimulatedDesign simulatedDesign;
 
     public double zoom = 20, translateX = 0, translateY = 0, dragStartTranslateX = 0, dragStartTranslateY = 0;
     private double gridScaleX = -1, gridScaleY = -1;
     private int gridMouseX = -1, gridMouseY = -1;
     private int mouseX = -1, mouseY = -1, mouseDragStartX = -1, mouseDragStartY = -1;
     public DesignRenderer renderer = new DesignRenderer();
-    private ChipPin hoveredPin = null;
-    private Chip hoveredChip = null;
+
+    private DesignElement hoveredElement = null;
 
     private boolean hoveredLeftDesignEdge = false, hoveredRightDesignEdge = false, hoveredTopDesignEdge = false, hoveredBottomDesignEdge = false;
     private boolean pressedLeftDesignEdge = false, pressedRightDesignEdge = false, pressedTopDesignEdge = false, pressedBottomDesignEdge = false;
     private int designInitialWidth = 0, designInitialHeight = 0;
 
-    private ChipTemplate selectedAddingChipTemplate = TransistorTemplate.getNPNTransistorTemplate();
+    private Chip selectedAddingChip = null;
+
+    private WireSegment addingWire = null;
+    private WireNode addingWireEnd = null;
 
     private boolean adjusted = false, panning = false;
 
@@ -135,7 +142,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     private void drawDesign(UIGraphics graphics, Design design) {
         // Draw all design chips
         for (Chip chip : design.getChips())
-            graphics.withCopy(chipGraphics -> drawChip(chipGraphics, chip.getChipTemplate(), chip));
+            graphics.withCopy(chipGraphics -> drawChip(chipGraphics, chip));
 
         // Draw all design chip pin backgrounds
         for (Chip chip : design.getChips())
@@ -143,7 +150,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         // Draw all design pin backgrounds
         for (Pin pin : design.getPins())
-            graphics.withCopy(pinGraphics -> drawPinBackground(pinGraphics, pin, simulatedDesign != null ? simulatedDesign.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == null && hoveredPin.pin() == pin));
+            graphics.withCopy(pinGraphics -> drawPinBackground(pinGraphics, pin, simulatedDesign != null ? simulatedDesign.getStateForPin(pin) : null, hoveredElement != null && hoveredElement.equals(pin)));
 
         // Draw all design wires
         for (Wire wire : design.getWires())
@@ -155,7 +162,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         // Draw all design pin foregrounds
         for (Pin pin : design.getPins())
-            graphics.withCopy(pinGraphics -> drawPinForeground(pinGraphics, pin, simulatedDesign != null ? simulatedDesign.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == null && hoveredPin.pin() == pin));
+            graphics.withCopy(pinGraphics -> drawPinForeground(pinGraphics, pin, simulatedDesign != null ? simulatedDesign.getStateForPin(pin) : null, hoveredElement != null && hoveredElement.equals(pin)));
     }
 
     private void drawPinBackground(UIGraphics graphics, Pin pin, LogicState state, boolean hovered) {
@@ -190,24 +197,38 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     }
 
     private void drawWire(UIGraphics graphics, Wire wire, LogicState state) {
-        // Set the stroke and color used for the paths and nodes
-        graphics.setStroke(UIStroke.solid(0.3f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND)); // TODO default
-        graphics.setColor(DesignEditorUtils.getColorForLogicState(state));
-
         // Draw all wire segments
         for (WireSegment segment : wire.getSegments())
-            graphics.drawPath(renderer.getWireSegmentShape(segment));
+            drawWireSegment(graphics, segment, state);
 
         // Draw all wire nodes
         for (WireNode node : wire.getNodes())
-            graphics.fill(renderer.getWireNodeShape(node));
+            drawWireNode(graphics, node, state);
     }
 
-    private void drawChip(UIGraphics graphics, ChipTemplate template, Chip chip) {
-        drawChip(graphics, template, chip, simulatedDesign.getSimulatedChipDesign(chip), renderer.getChipShape(chip), hoveredPin == null && hoveredChip == chip);
+    private void drawWireSegment(UIGraphics graphics, WireSegment segment, LogicState state) {
+        drawWireSegment(graphics, renderer.getWireSegmentShape(segment), state);
     }
 
-    private void drawChip(UIGraphics graphics, ChipTemplate template, Chip chip, SimulatedDesign design, RoundRectangle chipShape, boolean hovered) {
+    private void drawWireSegment(UIGraphics graphics, Path2D.Double path, LogicState state) {
+        // Set the stroke and color used for the paths
+        graphics.setStroke(UIStroke.solid(0.3f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND)); // TODO default
+        graphics.setColor(DesignEditorUtils.getColorForLogicState(state));
+        graphics.drawPath(path);
+    }
+
+    private void drawWireNode(UIGraphics graphics, WireNode node, LogicState state) {
+        // Set the stroke and color used for the nodes
+        graphics.setStroke(UIStroke.solid(0.3f, UIStroke.Cap.BUTT, UIStroke.Join.ROUND)); // TODO default
+        graphics.setColor(DesignEditorUtils.getColorForLogicState(state));
+        graphics.fill(renderer.getWireNodeShape(node));
+    }
+
+    private void drawChip(UIGraphics graphics, Chip chip) {
+        drawChip(graphics, chip, simulatedDesign.getSimulatedChipDesign(chip), renderer.getChipShape(chip), hoveredElement != null && hoveredElement.equals(chip));
+    }
+
+    private void drawChip(UIGraphics graphics, Chip chip, SimulatedDesign design, RoundRectangle chipShape, boolean hovered) {
         graphics.setColor(UITheme.getColor(ThemeKeys.Colors.Design.CHIP_BACKGROUND));
         if (hovered)
             graphics.setColor(UIColor.rgb(255, 255, 0));//Color.YELLOW);
@@ -215,7 +236,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         graphics.withCopy(chipGraphics -> {
             chipGraphics.translate(chipShape.getX(), chipShape.getY()); // TODO
-            template.renderChipPackage(chipGraphics, chip, design);
+            chip.getChipTemplate().renderChipPackage(chipGraphics, chip, design);
         });
     }
 
@@ -225,7 +246,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         // Draw pins for chip
         for (Pin pin : chip.getChipTemplate().getPins())
-            drawPinBackground(graphics, chip, pin, chipDesignInstance != null ? chipDesignInstance.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == chip && hoveredPin.pin() == pin);
+            drawPinBackground(graphics, chip, pin, chipDesignInstance != null ? chipDesignInstance.getStateForPin(pin) : null, hoveredElement != null && hoveredElement.equals(new ChipPin(chip, pin)));
     }
 
     private void drawChipPinForegrounds(UIGraphics graphics, Chip chip) {
@@ -234,7 +255,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
         // Draw pins for chip
         for (Pin pin : chip.getChipTemplate().getPins())
-            drawPinForeground(graphics, chip, pin, chipDesignInstance != null ? chipDesignInstance.getStateForPin(pin) : null, hoveredPin != null && hoveredPin.chip() == chip && hoveredPin.pin() == pin);
+            drawPinForeground(graphics, chip, pin, chipDesignInstance != null ? chipDesignInstance.getStateForPin(pin) : null, hoveredElement != null && hoveredElement.equals(new ChipPin(chip, pin)));
     }
 
     private void drawMouseObjects(UIGraphics uiGraphics, UIGraphics scaledGraphics) {
@@ -243,7 +264,13 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             scaledGraphics.drawRect(gridMouseX - 0.5, gridMouseY - 0.5, 1, 1);
         }
         // If there is a pin hovered, draw its tooltip
-        if (hoveredPin != null) {
+        if (hoveredElement instanceof Pin || hoveredElement instanceof ChipPin) {
+            ChipPin hoveredPin;
+            if (hoveredElement instanceof Pin pin)
+                hoveredPin = new ChipPin(null, pin);
+            else {
+                hoveredPin = (ChipPin) hoveredElement;
+            }
             // Get "actual" non-scaled X/Y coordinates for the pin
             Ellipse ellipse = renderer.getPinShape(hoveredPin);
             ellipse = (Ellipse) ellipse.translate(translateX, translateY);
@@ -255,7 +282,7 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             uiGraphics.setFont(UITheme.getFont(ThemeKeys.Fonts.Design.TOOLTIP)); // TODO
 
             // Get tooltip text information
-            String tooltipText = hoveredPin.pin().getName().toUpperCase();
+            String tooltipText = hoveredPin.getPin().getName().toUpperCase();
             Rectangle tooltipTextBounds = uiGraphics.getStringBounds(tooltipText);
             float tooltipSpacing = 4, xPadding = 10, yPadding = 5;
 
@@ -287,15 +314,15 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             uiGraphics.drawStringCentered(tooltipText, (float) (x + 10 + (tooltipTextBounds.getWidth() / 2)), (float) (y + 5 + (tooltipTextBounds.getHeight() / 2)));
         }
 
-        if (selectedAddingChipTemplate != null && gridMouseX > 0 && gridMouseX < design.getWidth() && gridMouseY > 0 && gridMouseY < design.getHeight()) {
-            int newChipX = gridMouseX - (selectedAddingChipTemplate.getWidth() / 2);
-            int newChipY = gridMouseY - (selectedAddingChipTemplate.getHeight() / 2);
-
+        if (selectedAddingChip != null && gridMouseX > 0 && gridMouseX < design.getWidth() && gridMouseY > 0 && gridMouseY < design.getHeight()) {
             // Check that all points within the chip are empty
+            int newChipX = selectedAddingChip.getLocation().getX();
+            int newChipY = selectedAddingChip.getLocation().getY();
             boolean conflict = false;
-            for (int chipX = newChipX; chipX < newChipX + selectedAddingChipTemplate.getWidth(); chipX++) {
-                for (int chipY = newChipY; chipY < newChipY + selectedAddingChipTemplate.getHeight(); chipY++) {
-                    if (!design.getPointContents(new Point(chipX, chipY)).isEmpty()) {
+            for (int chipX = selectedAddingChip.getLocation().getX(); chipX < newChipX + selectedAddingChip.getChipTemplate().getWidth(); chipX++) {
+                for (int chipY = newChipY; chipY < newChipY + selectedAddingChip.getChipTemplate().getHeight(); chipY++) {
+                    DesignElement element = design.getElementAt(new Point(chipX, chipY));
+                    if (element != null && !(element instanceof WireSegment)) {
                         conflict = true;
                         break;
                     }
@@ -304,12 +331,14 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
 
             if (!conflict) {
                 scaledGraphics.setAlpha(0.8f);
-                drawChip(scaledGraphics, selectedAddingChipTemplate, null, SimulatedDesign.none(), renderer.getNewChipShape(selectedAddingChipTemplate, newChipX, newChipY), false);
-                for (Pin pin : selectedAddingChipTemplate.getPins()) {
-                    drawPinBackground(scaledGraphics, renderer.getNewPinShape(selectedAddingChipTemplate, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
-                    drawPinForeground(scaledGraphics, renderer.getNewPinShape(selectedAddingChipTemplate, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
+                drawChip(scaledGraphics, selectedAddingChip, SimulatedDesign.none(), renderer.getNewChipShape(selectedAddingChip, newChipX, newChipY), false);
+                for (Pin pin : selectedAddingChip.getChipTemplate().getPins()) {
+                    drawPinBackground(scaledGraphics, renderer.getNewPinShape(selectedAddingChip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
+                    drawPinForeground(scaledGraphics, renderer.getNewPinShape(selectedAddingChip, pin, newChipX, newChipY), LogicState.UNCONNECTED, false);
                 }
             }
+        } else if (addingWire != null) {
+            drawWireSegment(scaledGraphics, renderer.getNewWireSegmentShape(addingWire), LogicState.UNCONNECTED);
         }
     }
 
@@ -318,8 +347,10 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         gridScaleY = (mouseY / zoom) - translateY;
         gridMouseX = (int) Math.round(gridScaleX);
         gridMouseY = (int) Math.round(gridScaleY);
-        hoveredPin = renderer.getHoveredPin(gridScaleX, gridScaleY);
-        hoveredChip = renderer.getHoveredChip(gridScaleX, gridScaleY);
+//        hoveredPin = renderer.getHoveredPin(gridScaleX, gridScaleY);
+//        hoveredChip = renderer.getHoveredChip(gridScaleX, gridScaleY);
+
+        hoveredElement = design.getElementAt(new Point(gridMouseX, gridMouseY));
 
         int designBorderX = (int) (translateX * zoom);
         int designBorderY = (int) (translateY * zoom);
@@ -355,29 +386,87 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
     @Override
     public boolean onMousePressed(int x, int y, int button) {
         if (button == 1) {
-            if (hoveredLeftDesignEdge)
-                pressedLeftDesignEdge = true;
-            else if (hoveredRightDesignEdge)
-                pressedRightDesignEdge = true;
-            if (hoveredTopDesignEdge)
-                pressedTopDesignEdge = true;
-            else if (hoveredBottomDesignEdge)
-                pressedBottomDesignEdge = true;
-            designInitialWidth = design.getWidth();
-            designInitialHeight = design.getHeight();
+            if (selectedAddingChip != null) {
+                selectedAddingChip.acceptTransform();
+                design.addChip(selectedAddingChip);
+                renderer.generate(design);
+                simulatedDesign = Simulation.initialize(design);
+                selectedAddingChip = null;
+            } else if (hoveredLeftDesignEdge || hoveredRightDesignEdge || hoveredTopDesignEdge || hoveredBottomDesignEdge) {
+                if (hoveredLeftDesignEdge)
+                    pressedLeftDesignEdge = true;
+                else if (hoveredRightDesignEdge)
+                    pressedRightDesignEdge = true;
+                if (hoveredTopDesignEdge)
+                    pressedTopDesignEdge = true;
+                else if (hoveredBottomDesignEdge)
+                    pressedBottomDesignEdge = true;
+                designInitialWidth = design.getWidth();
+                designInitialHeight = design.getHeight();
+            } else if (hoveredElement instanceof ChipPin || hoveredElement instanceof Pin || hoveredElement instanceof WireNode || hoveredElement instanceof WireSegment) {
+                WireRoutable hoveredWireRoutable;
+                boolean terminate = true;
+                if (hoveredElement instanceof ChipPin chipPin) {
+                    hoveredWireRoutable = chipPin;
+                } else if (hoveredElement instanceof Pin pin) {
+                    hoveredWireRoutable = new ChipPin(null, pin);
+                } else if (hoveredElement instanceof WireNode wireNode) {
+                    hoveredWireRoutable = wireNode;
+                } else {
+                    hoveredWireRoutable = new WireNode(new Point(gridMouseX, gridMouseY));
+                    terminate = false;
+                }
+
+                if (addingWire == null) {
+                    addingWireEnd = new WireNode(new Point(0, 0));
+                    addingWireEnd.getTransform().setOffset(gridMouseX, gridMouseY);
+
+                    addingWire = new WireSegment(design, hoveredWireRoutable, addingWireEnd);
+                    addingWire.reroute();
+                } else if (terminate) {
+                    addingWire.setEnd(hoveredWireRoutable);
+
+                    Point[] waypoints = Arrays.stream(addingWire.getRouteWaypoints())
+                            .map(WireWaypoint::getLocation)
+                            .toArray(Point[]::new);
+                    design.addWireSegment(addingWire.getStart().getLocation(), addingWire.getEnd().getLocation(), waypoints);
+                    addingWire = null;
+                    addingWireEnd = null;
+                    simulatedDesign = Simulation.initialize(design);
+                    renderer.generate(design);
+                } else {
+                    WireWaypoint[] waypoints = Arrays.copyOf(addingWire.getRouteWaypoints(), addingWire.getRouteWaypoints().length + 1);
+                    waypoints[waypoints.length - 1] = new WireWaypoint(hoveredWireRoutable.getLocation());
+                    addingWire.setRouteWaypoints(waypoints);
+                    addingWire.reroute();
+                }
+            } else if (addingWire != null) {
+                WireWaypoint[] waypoints = Arrays.copyOf(addingWire.getRouteWaypoints(), addingWire.getRouteWaypoints().length + 1);
+                waypoints[waypoints.length - 1] = new WireWaypoint(new Point(gridMouseX, gridMouseY));
+                addingWire.setRouteWaypoints(waypoints);
+                addingWire.reroute();
+            }
         } else if (button == 2) {
             mouseDragStartX = x;
             mouseDragStartY = y;
             dragStartTranslateX = translateX;
             dragStartTranslateY = translateY;
             panning = true;
+        } else if (button == 3) {
+            if (addingWire != null && addingWire.getRouteWaypoints().length > 0) {
+                WireWaypoint[] waypoints = Arrays.copyOf(addingWire.getRouteWaypoints(), addingWire.getRouteWaypoints().length - 1);
+                addingWire.setRouteWaypoints(waypoints);
+                addingWire.reroute();
+            } else if (addingWire != null) {
+                addingWire = null;
+            }
         }
         return true;
     }
 
     @Override
     public void onMouseReleased(int x, int y, int button) {
-        if (button == 1 && hoveredChip != null && hoveredPin == null) {
+        if (button == 1 && hoveredElement instanceof Chip hoveredChip) {
             if (hoveredChip.getChipTemplate() instanceof ToggleTemplate toggleTemplate) {
                 LogicState currentState = toggleTemplate.getDrivenState(hoveredChip);
                 LogicState newState = currentState == LogicState.LOW ? LogicState.HIGH : LogicState.LOW;
@@ -475,6 +564,25 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
         mouseX = x;
         mouseY = y;
         calculateHover();
+
+        if (selectedAddingChip != null) {
+            selectedAddingChip.getTransform().setOffset(gridMouseX - (selectedAddingChip.getChipTemplate().getWidth() / 2), gridMouseY - (selectedAddingChip.getChipTemplate().getHeight() / 2));
+        } else if (addingWire != null) {
+            if (hoveredElement != null && (hoveredElement instanceof ChipPin || hoveredElement instanceof Pin || hoveredElement instanceof WireNode)) {
+                if (hoveredElement instanceof ChipPin chipPin) {
+                    addingWire.setEnd(chipPin);
+                } else if (hoveredElement instanceof Pin pin) {
+                    addingWire.setEnd(new ChipPin(null, pin));
+                } else {
+                    addingWire.setEnd((WireNode) hoveredElement);
+                }
+            } else {
+                addingWire.setEnd(addingWireEnd);
+                addingWireEnd.getTransform().setOffset(gridMouseX, gridMouseY);
+            }
+            addingWire.reroute();
+        }
+
         return true;
     }
 
@@ -501,6 +609,13 @@ public class DesignEditor extends UIComponent implements UIInteractable, UIFocus
             getChangeBuffer().undo();
         } else if (e.getKeyCode() == KeyEvent.VK_Y && e.isControlDown()) {
             getChangeBuffer().redo();
+        } else if (e.getKeyCode() == KeyEvent.VK_N) {
+            selectedAddingChip = new Chip();
+            selectedAddingChip.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
+            selectedAddingChip.setLocation(new Point(0, 0));
+            selectedAddingChip.getTransform().setOffset(gridMouseX - (selectedAddingChip.getChipTemplate().getWidth() / 2), gridMouseY - (selectedAddingChip.getChipTemplate().getHeight() / 2));
+        } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+            selectedAddingChip = null;
         }
 
         return true;

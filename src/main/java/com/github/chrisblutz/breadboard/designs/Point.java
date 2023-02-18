@@ -8,8 +8,8 @@ import java.util.Objects;
 public class Point {
 
     private Transform transform;
-    private int x;
-    private int y;
+    private final int x;
+    private final int y;
 
     public Point(int x, int y) {
         this(x, y, Transform.NONE);
@@ -64,6 +64,16 @@ public class Point {
         // Return withOffset using offsets of 0, so the only offset that gets applied is the one applied
         // by the transform values
         return withOffset(0, 0);
+    }
+
+    public boolean isBetween(Point start, Point end) {
+        if (start.getX() == end.getX() && this.getX() == start.getX()
+                && ((this.getY() >= start.getY() && this.getY() <= end.getY())
+                || (this.getY() <= start.getY() && this.getY() >= end.getY()))) {
+            return true;
+        } else return start.getY() == end.getY() && this.getY() == start.getY()
+                && ((this.getX() >= start.getX() && this.getX() <= end.getX())
+                || (this.getX() <= start.getX() && this.getX() >= end.getX()));
     }
 
     @Override

@@ -59,7 +59,7 @@ public class MeshDesign {
             Set<MeshPin> wireMeshPins = new LinkedHashSet<>();
             for (ChipPin pin : wire.getConnectedPins()) {
                 // Convert the chip pin into a mesh pin that accounts for chip ancestry
-                MeshPin meshPin = new MeshPin(pin.pin(), pin.chip(), newAncestors);
+                MeshPin meshPin = new MeshPin(pin.getPin(), pin.getChip(), newAncestors);
                 wireMeshPins.add(meshPin);
             }
 

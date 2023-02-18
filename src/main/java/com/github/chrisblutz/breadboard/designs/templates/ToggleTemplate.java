@@ -11,6 +11,7 @@ import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIStroke;
 import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
+import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +92,7 @@ public class ToggleTemplate extends SimulatedTemplate<ToggleState> {
                 OUTPUT.setId("toggle_output");
                 OUTPUT.setName("Output");
                 OUTPUT.setChipLocation(new Point(4, 2));
+                OUTPUT.setChipOrientation(Direction.RIGHT);
             }
 
             // Configure template

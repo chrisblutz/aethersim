@@ -11,6 +11,7 @@ import com.github.chrisblutz.breadboard.ui.toolkit.UIGraphics;
 import com.github.chrisblutz.breadboard.ui.toolkit.UIStroke;
 import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
+import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.util.HashMap;
 import java.util.List;
@@ -125,6 +126,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
                 OUTPUT.setChipLocation(new Point(4, 1));
+                OUTPUT.setChipOrientation(Direction.RIGHT);
             }
 
             // Configure template
@@ -148,6 +150,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
                 OUTPUT.setChipLocation(new Point(4, 1));
+                OUTPUT.setChipOrientation(Direction.RIGHT);
             }
 
             // Configure template
@@ -171,6 +174,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
                 OUTPUT.setChipLocation(new Point(4, 1));
+                OUTPUT.setChipOrientation(Direction.RIGHT);
             }
 
             // Configure template
@@ -194,6 +198,7 @@ public class ConstantTemplate extends SimulatedTemplate<ConstantState> {
                 OUTPUT.setId("source_output");
                 OUTPUT.setName("Output");
                 OUTPUT.setChipLocation(new Point(4, 1));
+                OUTPUT.setChipOrientation(Direction.RIGHT);
             }
 
             // Configure template

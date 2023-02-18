@@ -13,6 +13,7 @@ import com.github.chrisblutz.breadboard.ui.toolkit.UIStroke;
 import com.github.chrisblutz.breadboard.ui.toolkit.UITheme;
 import com.github.chrisblutz.breadboard.ui.toolkit.display.theming.ThemeKeys;
 import com.github.chrisblutz.breadboard.ui.toolkit.layout.TextAlignment;
+import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -105,12 +106,15 @@ public class TransistorTemplate extends ChipTemplate {
             NPN_COLLECTOR.setId("transistor_npn_collector");
             NPN_COLLECTOR.setName("Collector");
             NPN_COLLECTOR.setChipLocation(new Point(0, 1));
+            NPN_COLLECTOR.setChipOrientation(Direction.LEFT);
             NPN_BASE.setId("transistor_npn_base");
             NPN_BASE.setName("Base");
             NPN_BASE.setChipLocation(new Point(0, 3));
+            NPN_BASE.setChipOrientation(Direction.LEFT);
             NPN_EMITTER.setId("transistor_npn_emitter");
             NPN_EMITTER.setName("Emitter");
             NPN_EMITTER.setChipLocation(new Point(6, 2));
+            NPN_EMITTER.setChipOrientation(Direction.RIGHT);
 
             // Configure template
             npnTransistorTemplate = new TransistorTemplate(false); // NPN transistors are active high
@@ -131,12 +135,15 @@ public class TransistorTemplate extends ChipTemplate {
             PNP_EMITTER.setId("transistor_pnp_emitter");
             PNP_EMITTER.setName("Emitter");
             PNP_EMITTER.setChipLocation(new Point(0, 1));
+            PNP_EMITTER.setChipOrientation(Direction.LEFT);
             PNP_BASE.setId("transistor_pnp_base");
             PNP_BASE.setName("Base");
             PNP_BASE.setChipLocation(new Point(0, 3));
+            PNP_BASE.setChipOrientation(Direction.LEFT);
             PNP_COLLECTOR.setId("transistor_pnp_collector");
             PNP_COLLECTOR.setName("Collector");
             PNP_COLLECTOR.setChipLocation(new Point(6, 2));
+            PNP_COLLECTOR.setChipOrientation(Direction.RIGHT);
 
             // Configure template
             pnpTransistorTemplate = new TransistorTemplate(true); // PNP transistors are active low

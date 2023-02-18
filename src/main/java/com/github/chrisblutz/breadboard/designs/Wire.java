@@ -6,22 +6,32 @@ import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Wire implements BreadboardSavable {
 
-    private final Set<WireNode> nodes = new LinkedHashSet<>();
-    private final Set<ChipPin> connectedPins = new LinkedHashSet<>();
     private final Set<WireSegment> segments = new LinkedHashSet<>();
 
     public Set<WireNode> getNodes() {
-        return nodes;
+        return segments.stream()
+                .map(WireSegment::getEndpoints)
+                .flatMap(Arrays::stream)
+                .filter(endpoint -> endpoint instanceof WireNode)
+                .map(endpoint -> (WireNode) endpoint)
+                .collect(Collectors.toSet());
     }
 
     public Set<ChipPin> getConnectedPins() {
-        return connectedPins;
+        return segments.stream()
+                .map(WireSegment::getEndpoints)
+                .flatMap(Arrays::stream)
+                .filter(endpoint -> endpoint instanceof ChipPin)
+                .map(endpoint -> (ChipPin) endpoint)
+                .collect(Collectors.toSet());
     }
 
     public Set<WireSegment> getSegments() {
@@ -30,23 +40,17 @@ public class Wire implements BreadboardSavable {
 
     public void addSegment(final WireSegment segment) {
         segments.add(segment);
-        // "Connect" this segment to its nodes and pins
-        Set.of(segment.getStart(), segment.getEnd())
-                .forEach(endpoint -> {
-                    if (endpoint instanceof WireNode node) {
-                        node.connect(segment);
-                        nodes.add(node);
-                    } else if (endpoint instanceof ChipPin pin) {
-                        connectedPins.add(pin);
-                    }
-                }
-        );
     }
 
     public void addSegments(WireSegment... segments) {
         // Add each segment individually
         for (WireSegment segment : segments)
             addSegment(segment);
+    }
+
+    public void merge(Wire other) {
+        segments.addAll(other.segments);
+        other.segments.clear();
     }
 
     @Override

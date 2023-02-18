@@ -51,7 +51,11 @@ public class MeshSimulatedDesign extends SimulatedDesign {
 
     @Override
     public SimulatedDesign getSimulatedChipDesign(Chip chip) {
-        return chipMapping.get(chip);
+        MeshSimulatedDesign design = chipMapping.get(chip);
+        if (design != null)
+            return design;
+        else
+            return none();
     }
 
     public <T extends ChipState> MeshChip<T> generateMeshChip(Chip chip, SimulatedTemplate<T> simulatedTemplate) {

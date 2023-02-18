@@ -80,7 +80,7 @@ public class Pin extends DesignElement implements BreadboardSavable {
 
     @Override
     public boolean contains(Point point) {
-        return false;
+        return getDesignLocation().equals(point);
     }
 
     @Override

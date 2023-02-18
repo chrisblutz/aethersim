@@ -1,6 +1,5 @@
 package com.github.chrisblutz.breadboard.designs;
 
-import com.github.chrisblutz.breadboard.designs.states.Status;
 import com.github.chrisblutz.breadboard.designs.states.Transform;
 
 import java.util.Collection;
@@ -10,11 +9,6 @@ public abstract class DesignElement {
 
     private static final Set<DesignElement> EMPTY_SET = Set.of();
 
-    // Track whether this element should be persisted by
-    // marking it as NEW, TRANSFORMING, STATIC, etc. (or other wrods)
-    // I.e. when saving, don't save NEW items, save TRANSFORMING and STATIC
-    // When rendering, STATIC as solid, NEW and TRANSFORMING as slightly transparent, error-checked, etc.
-    private Status status;
     private final Transform transform = new Transform(this);
 
     public Transform getTransform() {

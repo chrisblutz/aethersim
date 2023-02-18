@@ -1,6 +1,5 @@
 package com.github.chrisblutz.breadboard.simulation.mesh.mesh.generation;
 
-import com.github.chrisblutz.breadboard.Breadboard;
 import com.github.chrisblutz.breadboard.designs.*;
 import com.github.chrisblutz.breadboard.designs.templates.DesignedTemplate;
 import com.github.chrisblutz.breadboard.designs.templates.SimulatedTemplate;
@@ -96,7 +95,7 @@ public class MeshGenerator {
         // connected, all pins should have the same vertex).
         for (Wire wire : design.getWires()) {
             ChipPin pin = wire.getConnectedPins().iterator().next();
-            MeshPin meshPin = new MeshPin(pin.pin(), pin.chip(), newAncestors);
+            MeshPin meshPin = new MeshPin(pin.getPin(), pin.getChip(), newAncestors);
             simulatedDesign.getWireMapping().put(wire, pinVertices.get(meshPin));
         }
 

@@ -5,13 +5,16 @@ import com.github.chrisblutz.breadboard.designs.templates.DesignedTemplate;
 import com.github.chrisblutz.breadboard.designs.templates.SimulatedTemplate;
 import com.github.chrisblutz.breadboard.designs.templates.TransistorTemplate;
 import com.github.chrisblutz.breadboard.designs.wires.WireNode;
+import com.github.chrisblutz.breadboard.designs.wires.WireRoutable;
 import com.github.chrisblutz.breadboard.designs.wires.WireSegment;
 import com.github.chrisblutz.breadboard.designs.wires.WireWaypoint;
 import com.github.chrisblutz.breadboard.saving.BreadboardSavable;
 import com.github.chrisblutz.breadboard.saving.ProjectOutputWriter;
+import com.github.chrisblutz.breadboard.ui.render.designs.DesignEditor;
 import com.github.chrisblutz.breadboard.utils.Direction;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Design implements BreadboardSavable {
 
@@ -35,10 +38,16 @@ public class Design implements BreadboardSavable {
     private int width;
     public int height;
 
-    private final List<Pin> pins = new ArrayList<>();
-    private final List<Chip> chips = new ArrayList<>();
+    private final Set<Pin> pins = new LinkedHashSet<>();
+    private final Set<Chip> chips = new LinkedHashSet<>();
+
+    @Deprecated
     private final List<Wire> wires = new ArrayList<>();
+    @Deprecated
     private final Map<ChipPin, Set<Wire>> pinWireConnections = new HashMap<>();
+
+    private final Set<WireNode> wireNodes = new LinkedHashSet<>();
+    private final Set<WireSegment> wireSegments = new LinkedHashSet<>();
 
     private final Map<Direction, Integer> openDistances = new HashMap<>();
 
@@ -166,11 +175,11 @@ public class Design implements BreadboardSavable {
 //        clearPointContentCache();
 //    }
 
-    public List<Pin> getPins() {
+    public Set<Pin> getPins() {
         return pins;
     }
 
-    public List<Chip> getChips() {
+    public Set<Chip> getChips() {
         return chips;
     }
 
@@ -258,6 +267,89 @@ public class Design implements BreadboardSavable {
             addWire(wire);
     }
 
+    public void addWireSegment(Point start, Point end, Point[] waypoints) {
+        DesignElement startElement = getElementAt(start);
+        DesignElement endElement = getElementAt(end);
+
+        Wire existingStartWire = null, existingEndWire = null;
+        WireRoutable segmentStart = null, segmentEnd = null;
+
+        if (startElement instanceof WireNode wireNode) {
+            // We've already got a node here, so use that as the start point and attach it to the existing wire
+            segmentStart = wireNode;
+            for (Wire wire : wires)
+                if (wire.getNodes().contains(wireNode))
+                    existingStartWire = wire;
+        } else if (startElement instanceof ChipPin chipPin) {
+            segmentStart = chipPin;
+        } else if (startElement instanceof Pin pin) {
+            segmentStart = new ChipPin(null, pin);
+        } else if (startElement instanceof WireSegment || startElement instanceof WireWaypoint) {
+            // If the start point is a point on a wire segment, we need to split the wire segment
+            WireSegment wireSegment;
+            if (startElement instanceof WireSegment segment)
+                wireSegment = segment;
+            else
+                wireSegment = ((WireWaypoint) startElement).getWireSegment();
+
+            for (Wire wire : wires)
+                if (wire.getSegments().contains(wireSegment))
+                    existingStartWire = wire;
+
+            // Now split the segment at the start point
+            WireSegment newSegment = wireSegment.splitAt(start);
+            existingStartWire.addSegment(newSegment);
+            segmentStart = newSegment.getStart();
+        }
+
+        if (endElement instanceof WireNode wireNode) {
+            // We've already got a node here, so use that as the start point and attach it to the existing wire
+            segmentEnd = wireNode;
+            for (Wire wire : wires)
+                if (wire.getNodes().contains(wireNode))
+                    existingEndWire = wire;
+        } else if (endElement instanceof ChipPin chipPin) {
+            segmentEnd = chipPin;
+        } else if (endElement instanceof Pin pin) {
+            segmentEnd = new ChipPin(null, pin);
+        } else if (endElement instanceof WireSegment || endElement instanceof WireWaypoint) {
+            // If the start point is a point on a wire segment, we need to split the wire segment
+            WireSegment wireSegment;
+            if (endElement instanceof WireSegment segment)
+                wireSegment = segment;
+            else
+                wireSegment = ((WireWaypoint) endElement).getWireSegment();
+
+            for (Wire wire : wires)
+                if (wire.getSegments().contains(wireSegment))
+                    existingEndWire = wire;
+
+            // Now split the segment at the start point
+            WireSegment newSegment = wireSegment.splitAt(end);
+            existingStartWire.addSegment(newSegment);
+            segmentEnd = newSegment.getStart();
+        }
+
+        // Create a new wire segment
+        WireWaypoint[] wireWaypoints = Arrays.stream(waypoints).map(WireWaypoint::new).toArray(WireWaypoint[]::new);
+        WireSegment newSegment = new WireSegment(this, segmentStart, segmentEnd, wireWaypoints);
+
+        // Add it to a wire, then if necessary, create one or merge the two wires
+        if (existingStartWire != null && existingEndWire != null) {
+            existingStartWire.addSegment(newSegment);
+            existingStartWire.merge(existingEndWire);
+            removeWire(existingEndWire);
+        } else if (existingStartWire != null) {
+            existingStartWire.addSegment(newSegment);
+        } else if (existingEndWire != null) {
+            existingEndWire.addSegment(newSegment);
+        } else {
+            Wire newWire = new Wire();
+            newWire.addSegment(newSegment);
+            addWire(newWire);
+        }
+    }
+
     public void removeWire(Wire wire) {
         wires.remove(wire);
 
@@ -279,6 +371,72 @@ public class Design implements BreadboardSavable {
                 .map(Wire::getSegments)
                 .flatMap(Set::stream)
                 .forEach(WireSegment::reroute);
+    }
+
+    public DesignElement getElementAt(Point point) {
+        // First, search for pins at the specified point
+        Pin matchedPin = pins.stream()
+                .filter(pin -> pin.contains(point))
+                .findAny()
+                .orElse(null);
+        if (matchedPin != null)
+            return matchedPin;
+
+        // Next, find any pins attached to chips
+        ChipPin matchedChipPin = chips.stream()
+                .map(chip ->
+                    chip.getChipTemplate().getPins().stream()
+                            .map(pin -> new ChipPin(chip, pin))
+                            .collect(Collectors.toSet())
+                ).flatMap(Set::stream)
+                .filter(chipPin -> chipPin.contains(point))
+                .findAny()
+                .orElse(null);
+        if (matchedChipPin != null)
+            return matchedChipPin;
+
+        // Next, find any chips at the specified point
+        Chip matchedChip = chips.stream()
+                .filter(chip -> chip.contains(point))
+                .findAny()
+                .orElse(null);
+        if (matchedChip != null)
+            return matchedChip;
+
+        // Next, search for any wire nodes
+        WireNode matchedNode = wires.stream()
+                .map(Wire::getNodes)
+                .flatMap(Set::stream)
+                .filter(node -> node.contains(point))
+                .findAny()
+                .orElse(null);
+        if (matchedNode != null)
+            return matchedNode;
+
+        // Next, search for any wire segment waypoints
+        WireWaypoint matchedWaypoint = wires.stream()
+                .map(Wire::getSegments)
+                .flatMap(Set::stream)
+                .map(WireSegment::getRouteWaypoints)
+                .flatMap(Arrays::stream)
+                .filter(waypoint -> waypoint.contains(point))
+                .findAny()
+                .orElse(null);
+        if (matchedWaypoint != null)
+            return matchedWaypoint;
+
+        // Finally, search for wire segments under the specified point
+        WireSegment matchedSegment = wires.stream()
+                .map(Wire::getSegments)
+                .flatMap(Set::stream)
+                .filter(segment -> segment.contains(point))
+                .findAny()
+                .orElse(null);
+        if (matchedSegment != null)
+            return matchedSegment;
+
+        // If we get here, we found nothing, so return null
+        return null;
     }
 
     public Set<Wire> getWiresConnectedToPin(ChipPin pin) {

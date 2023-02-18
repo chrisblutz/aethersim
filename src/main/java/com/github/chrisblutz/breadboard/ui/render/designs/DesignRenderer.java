@@ -39,22 +39,22 @@ public class DesignRenderer {
         return chipShapes.get(chip);
     }
 
-    public RoundRectangle getNewChipShape(ChipTemplate template, int x, int y) {
+    public RoundRectangle getNewChipShape(Chip chip, int x, int y) {
         RoundRectangle chipShape = new RoundRectangle(
                 x,
                 y,
-                template.getWidth(),
-                template.getHeight(),
+                chip.getChipTemplate().getWidth(),
+                chip.getChipTemplate().getHeight(),
                 0.75,
                 0.75 // TODO default
         );
         return chipShape;
     }
 
-    public Ellipse getNewPinShape(ChipTemplate template, Pin pin, int x, int y) {
+    public Ellipse getNewPinShape(Chip chip, Pin pin, int x, int y) {
         // Calculate pin X/Y based on whether it's attached to a chip
-        double pinX = (template == null ? pin.getDesignLocation().getX() : x + pin.getChipLocation().getX());
-        double pinY = (template == null ? pin.getDesignLocation().getY() : y + pin.getChipLocation().getY());
+        double pinX = (chip == null ? pin.getDesignLocation().getX() : x + pin.getChipLocation().getX());
+        double pinY = (chip == null ? pin.getDesignLocation().getY() : y + pin.getChipLocation().getY());
         // Create the shape
         Ellipse pinShape = new Ellipse(
                 (pinX - PIN_RADIUS),
@@ -63,6 +63,10 @@ public class DesignRenderer {
                 (PIN_RADIUS * 2)
         );
         return pinShape;
+    }
+
+    public Path2D.Double getNewWireSegmentShape(WireSegment wireSegment) {
+        return generateWireSegmentShape(wireSegment);
     }
 
     public ChipPin getHoveredPin(double x, double y) {

@@ -6,6 +6,9 @@ import com.github.chrisblutz.breadboard.ui.BreadboardUI;
 
 public class Breadboard {
     public static void main(String[] args) {
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> BreadboardLogging.getLogger().error("Uncaught exception in thread '{}'.", t.getName(), e));
+
+
         BreadboardLogging.getLogger().info("--- Starting Breadboard ---");
         BreadboardLogging.logEnvironmentInformation();
         BreadboardLogging.getLogger().info("Initializing plugins...");

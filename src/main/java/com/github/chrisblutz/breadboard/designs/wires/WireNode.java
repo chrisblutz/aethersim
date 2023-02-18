@@ -52,6 +52,6 @@ public class WireNode extends DesignElement implements WireRoutable {
 
     @Override
     public boolean contains(Point point) {
-        return false;
+        return getLocation().equals(point);
     }
 }

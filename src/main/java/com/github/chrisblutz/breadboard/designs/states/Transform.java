@@ -34,6 +34,10 @@ public class Transform {
         this.yOffset = yOffset;
     }
 
+    public boolean hasOffsets() {
+        return xOffset != 0 || yOffset != 0;
+    }
+
     public int getXOffset() {
         return xOffset;
     }

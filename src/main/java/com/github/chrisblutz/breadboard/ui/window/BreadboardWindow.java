@@ -48,18 +48,24 @@ public class BreadboardWindow {
         norInput1.setName("Input");
         norInput1.setChipLocation(new Point(0, 1));
         norInput1.setDesignLocation(new Point(0, 8));
+        norInput1.setChipOrientation(com.github.chrisblutz.breadboard.utils.Direction.LEFT);
+        norInput1.setDesignOrientation(com.github.chrisblutz.breadboard.utils.Direction.RIGHT);
 
         Pin norInput2 = new Pin();
         norInput2.setId("input_2");
         norInput2.setName("Input");
         norInput2.setChipLocation(new Point(0, 3));
         norInput2.setDesignLocation(new Point(0, 14));
+        norInput2.setChipOrientation(com.github.chrisblutz.breadboard.utils.Direction.LEFT);
+        norInput2.setDesignOrientation(com.github.chrisblutz.breadboard.utils.Direction.RIGHT);
 
         Pin norOutput = new Pin();
         norOutput.setId("output");
         norOutput.setName("Output");
         norOutput.setChipLocation(new Point(6, 2));
         norOutput.setDesignLocation(new Point(20, 10));
+        norOutput.setChipOrientation(com.github.chrisblutz.breadboard.utils.Direction.RIGHT);
+        norOutput.setDesignOrientation(com.github.chrisblutz.breadboard.utils.Direction.LEFT);
 
         Chip norTransistor1 = new Chip();
         norTransistor1.setChipTemplate(TransistorTemplate.getNPNTransistorTemplate());
@@ -185,24 +191,32 @@ public class BreadboardWindow {
         srLatchReset.setName("Reset");
         srLatchReset.setChipLocation(new Point(0, 1));
         srLatchReset.setDesignLocation(new Point(0, 2));
+        srLatchReset.setChipOrientation(com.github.chrisblutz.breadboard.utils.Direction.LEFT);
+        srLatchReset.setDesignOrientation(com.github.chrisblutz.breadboard.utils.Direction.RIGHT);
 
         Pin srLatchSet = new Pin();
         srLatchSet.setId("set");
         srLatchSet.setName("Set");
         srLatchSet.setChipLocation(new Point(0, 3));
         srLatchSet.setDesignLocation(new Point(0, 11));
+        srLatchSet.setChipOrientation(com.github.chrisblutz.breadboard.utils.Direction.LEFT);
+        srLatchSet.setDesignOrientation(com.github.chrisblutz.breadboard.utils.Direction.RIGHT);
 
         Pin srLatchOutput = new Pin();
         srLatchOutput.setId("output");
         srLatchOutput.setName("Output");
         srLatchOutput.setChipLocation(new Point(6, 1));
         srLatchOutput.setDesignLocation(new Point(15, 3));
+        srLatchOutput.setChipOrientation(com.github.chrisblutz.breadboard.utils.Direction.RIGHT);
+        srLatchOutput.setDesignOrientation(com.github.chrisblutz.breadboard.utils.Direction.LEFT);
 
         Pin srLatchInverseOutput = new Pin();
         srLatchInverseOutput.setId("inverse_output");
         srLatchInverseOutput.setName("Inverse Output");
         srLatchInverseOutput.setChipLocation(new Point(6, 3));
         srLatchInverseOutput.setDesignLocation(new Point(15, 10));
+        srLatchInverseOutput.setChipOrientation(com.github.chrisblutz.breadboard.utils.Direction.RIGHT);
+        srLatchInverseOutput.setDesignOrientation(com.github.chrisblutz.breadboard.utils.Direction.LEFT);
 
         Chip srLatchNor1 = new Chip();
         srLatchNor1.setChipTemplate(norTemplate);
@@ -299,7 +313,7 @@ public class BreadboardWindow {
 
         Design testDesign = new Design();
         testDesign.setWidth(19);
-        testDesign.setHeight(10);
+        testDesign.setHeight(11);
 
         Chip testToggleReset = new Chip();
         testToggleReset.setChipTemplate(ToggleTemplate.getTemplate());
@@ -307,7 +321,7 @@ public class BreadboardWindow {
 
         Chip testToggleSet = new Chip();
         testToggleSet.setChipTemplate(ToggleTemplate.getTemplate());
-        testToggleSet.setLocation(new Point(1, 5));
+        testToggleSet.setLocation(new Point(1, 6));
 
         Chip testSRLatch = new Chip();
         testSRLatch.setChipTemplate(srLatchTemplate);
@@ -385,7 +399,7 @@ public class BreadboardWindow {
         renderFlexContainer.addComponent(new UIBorder(new DesignEditor(testDesign, simulatedDesign), 2), 1);
         renderFlexContainer.addComponent(new UIBorder(new DesignEditor(srLatchDesign, simulatedDesign.getSimulatedChipDesign(testSRLatch)), 2), 1);
         renderFlexContainer.addComponent(new UIBorder(new DesignEditor(norDesign, simulatedDesign.getSimulatedChipDesign(testSRLatch).getSimulatedChipDesign(srLatchNor1)), 2), 1);
-        renderFlexContainer.addComponent(new UIBorder(new DesignEditor(norDesign, simulatedDesign.getSimulatedChipDesign(testSRLatch).getSimulatedChipDesign(srLatchNor2)), 2), 1);
+       // renderFlexContainer.addComponent(new UIBorder(new DesignEditor(norDesign, simulatedDesign.getSimulatedChipDesign(testSRLatch).getSimulatedChipDesign(srLatchNor2)), 2), 1);
 
         UIFlexContainer testFlexContainer = new UIFlexContainer(Direction.VERTICAL);
         for (int i = 0; i < 4; i++)
@@ -413,7 +427,7 @@ public class BreadboardWindow {
 //        WorkerScheduler.queue(input1);
 //        WorkerScheduler.queue(input2);
 
-        UIWindow window = new UIWindow("Breadboard");
+        UIWindow window = new UIWindow("Test Project [test_proj.aether] - AetherSim");
         window.setContent(flexContainer);
         window.setVisible(true);
     }
