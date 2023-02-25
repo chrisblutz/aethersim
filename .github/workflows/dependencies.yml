@@ -5,8 +5,7 @@ on:
       - main
 
 jobs:
-  build:
-    name: Dependencies
+  submit:
     runs-on: ubuntu-latest
     permissions:
       contents: write
