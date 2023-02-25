@@ -1,6 +1,6 @@
 <Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
     <Properties>
-        <Property name="LOG_DIRECTORY">Logs/</Property>
+        <Property name="LOG_DIRECTORY">logs/</Property>
         <Property name="LOG_LAYOUT">%d{yyyy-MM-dd HH:mm:ss} %-10c %5p %m%n</Property>
     </Properties>
     <Appenders>
@@ -9,8 +9,8 @@
         </Console>
         <RollingFile
                 name="rollingFile"
-                fileName="${LOG_DIRECTORY}/breadboard.log"
-                filePattern="${LOG_DIRECTORY}/breadboard.old.log.zip"
+                fileName="${LOG_DIRECTORY}/aethersim.log"
+                filePattern="${LOG_DIRECTORY}/aethersim.old.log.zip"
                 ignoreExceptions="false">
             <PatternLayout pattern="${LOG_LAYOUT}"></PatternLayout>
             <Policies>

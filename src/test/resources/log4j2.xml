@@ -1,0 +1,6 @@
+<Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
+    <Loggers>
+        <Root level="off">
+        </Root>
+    </Loggers>
+</Configuration>
