@@ -394,14 +394,25 @@ public class UIWindow {
     private RenderPassManager renderPassManager;
 
     public UIWindow(String windowTitle) {
+        this(windowTitle, false);
+    }
+
+    protected UIWindow(String windowTitle, boolean headless) {
         this.windowTitle = windowTitle;
-        internalFrame = new JFrame(windowTitle);
-        internalFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        internalFrame.setFocusTraversalKeysEnabled(false);
+
+        // If headless (usually used for unit tests), don't create a JFrame
+        if (!headless) {
+            internalFrame = new JFrame(windowTitle);
+            internalFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            internalFrame.setFocusTraversalKeysEnabled(false);
+        } else {
+            internalFrame = null;
+        }
 
         // Create internal JPanel
         internalPanel = new InternalPanel();
-        internalFrame.setContentPane(internalPanel);
+        if (!headless)
+            internalFrame.setContentPane(internalPanel);
 
         // Initialize render pass manager
         renderPassManager = new RenderPassManager(1000 / 60, () -> {
