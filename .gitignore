@@ -8,5 +8,5 @@
 *.iml
 
 # Project-Specific Items
-/Logs/
-*.bbproj
+/logs/
+*.asproj
