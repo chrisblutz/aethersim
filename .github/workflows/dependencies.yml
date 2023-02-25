@@ -11,9 +11,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Submit Gradle Dependencies
+      - name: Submit Gradle dependencies
         uses: mikepenz/gradle-dependency-submission@v0.8.4
 
