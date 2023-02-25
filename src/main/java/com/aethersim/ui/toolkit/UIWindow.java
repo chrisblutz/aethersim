@@ -274,11 +274,12 @@ public class UIWindow {
             // Set the minimum size of the frame, then update the internal panel
             if (content != null && content.getMinimumSize() != null) {
                 setMinimumSize(content.getMinimumSize());
-                internalFrame.setMinimumSize(new Dimension(
-                        content.getMinimumSize().getWidth(),
-                        content.getMinimumSize().getHeight()
-                ));
-            } else {
+                if (!headless)
+                    internalFrame.setMinimumSize(new Dimension(
+                            content.getMinimumSize().getWidth(),
+                            content.getMinimumSize().getHeight()
+                    ));
+            } else if (!headless) {
                 internalFrame.setMinimumSize(new Dimension(0, 0));
             }
             internalPanel.updateFromContent();
@@ -386,6 +387,7 @@ public class UIWindow {
     }
 
     private String windowTitle;
+    private final boolean headless;
     private final JFrame internalFrame;
     private final InternalPanel internalPanel;
     private UIComponent content;
@@ -399,6 +401,7 @@ public class UIWindow {
 
     protected UIWindow(String windowTitle, boolean headless) {
         this.windowTitle = windowTitle;
+        this.headless = headless;
 
         // If headless (usually used for unit tests), don't create a JFrame
         if (!headless) {
@@ -433,13 +436,15 @@ public class UIWindow {
         windowContainer.pack();
 
         // Pack the frame, so it fits around the preferred size of the content
-        internalFrame.pack();
+        if (!headless)
+            internalFrame.pack();
     }
 
     public void setVisible(boolean visible) {
         AetherSimLogging.getInterfaceLogger().info("Window '{}' is now set to be {}.", windowTitle, visible ? "shown" : "hidden");
 
-        internalFrame.setVisible(visible);
+        if (!headless)
+            internalFrame.setVisible(visible);
 
         if (visible)
             renderPassManager.start();
