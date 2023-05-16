@@ -43,7 +43,7 @@ public class UITheme {
         typeDescription.substituteProperty("Fonts", Map.class, "getFonts", "setFonts");
 
         // Configure the YAML constructor for the UIThemeInstance class
-        yamlThemeConstructor = new Constructor(UIThemeInstance.class);
+        yamlThemeConstructor = new Constructor(new LoaderOptions());
         SafeConstructor s = new SafeConstructor(new LoaderOptions());
         yamlThemeConstructor.addTypeDescription(typeDescription);
 
@@ -272,7 +272,7 @@ public class UITheme {
         ) {
             // Load the YAML into a UIThemeInstance object
             Yaml yaml = new Yaml(yamlThemeConstructor);
-            theme = yaml.load(fileInputStream);
+            theme = yaml.loadAs(fileInputStream, UIThemeInstance.class);
 
             // Since we've loaded properties, we need to clear the caches
             colorPropertyCache.clear();
